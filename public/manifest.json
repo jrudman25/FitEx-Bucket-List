@@ -1,0 +1,15 @@
+{
+  "short_name": "Bucket List",
+  "name": "FitEx Bucket List",
+  "icons": [
+    {
+      "src": "bucketListIcon.png",
+      "sizes": "168x210",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
