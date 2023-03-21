@@ -8,14 +8,13 @@ import CameraEnhanceRoundedIcon from '@mui/icons-material/CameraEnhanceRounded';
 import Box from '@mui/material/Box';
 import {Button, Card, CardActions, CardContent, CardMedia, Typography} from "@mui/material";
 
-//Used from: https://mui.com/material-ui/react-bottom-navigation/
+//Used from: https://mui.com/material-ui/react-bottom-navigation/, https://mui.com/material-ui/react-card/
 export default function BucketList() {
     const [value, setValue] = React.useState('all');
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
-
 
     return (
         <React.Fragment>
