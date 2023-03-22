@@ -7,6 +7,7 @@ import HikingRoundedIcon from '@mui/icons-material/HikingRounded';
 import CameraEnhanceRoundedIcon from '@mui/icons-material/CameraEnhanceRounded';
 import Box from '@mui/material/Box';
 import {Button, Card, CardActions, CardContent, CardMedia, Typography} from "@mui/material";
+import { geolocated } from 'react-geolocated';
 
 //Used from: https://mui.com/material-ui/react-bottom-navigation/, https://mui.com/material-ui/react-card/
 export default function BucketList() {
@@ -15,6 +16,13 @@ export default function BucketList() {
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
+
+    const coordinates = () => {
+        if (geolocated.isGeolocationAvailable && geolocated.isGeolocationEnabled && geolocated.coords) {
+             console.log(geolocated.coords.latitude);
+             console.log(geolocated.coords.longitude);
+        }
+    }
 
     return (
         <React.Fragment>
