@@ -7,7 +7,7 @@ import HikingRoundedIcon from '@mui/icons-material/HikingRounded';
 import CameraEnhanceRoundedIcon from '@mui/icons-material/CameraEnhanceRounded';
 import Box from '@mui/material/Box';
 import {Button, Card, CardActions, CardContent, CardMedia, Typography} from "@mui/material";
-import bucketList from './BucketListGlobal';
+import bucketList from './BucketListGlobal2';
 import scavengerList from './ScavengerListGlobal';
 import heritage from './eyJidWNrZXQiOiJhc3NldHMuYWxsdHJh.jpg';
 
