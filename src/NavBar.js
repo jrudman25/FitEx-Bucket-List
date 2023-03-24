@@ -1,28 +1,19 @@
-import React from 'react';
-import { Nav, NavLink, NavMenu }
-    from "./NavBarElement";
+import { Nav } from './NavBarElement';
+import bucketListIcon from './img/bucketListIcon.png'
 
 const NavBar = () => {
     return (
         <>
-            <Nav>
-                <NavMenu>
-                    <NavLink to="/home" activeStyle>
-                        Home
-                    </NavLink>
-                    <NavLink to="/Bucketlist" activeStyle>
-                        Bucket List
-                    </NavLink>
-                    <NavLink to="/Group" activeStyle>
-                        Group
-                    </NavLink>
-                    <NavLink to="/Leaderboard" activeStyle>
-                        Leaderboard
-                    </NavLink>
-                    <NavLink to="/Questionnaire" activeStyle>
-                        Questionnaire
-                    </NavLink>
-                </NavMenu>
+            <Nav style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <div id={"imageContainer"} style={{ height: '50px', marginRight: '10px' }}>
+                        <img src={bucketListIcon} style={{ width: '100%', height: '100%' }} />
+                    </div>
+                    <a href="/home">
+                        <div style={{ color: 'white', fontSize: '24px' }}>Hokie Bucket List</div>
+                    </a>
+
+                </div>
             </Nav>
         </>
     );

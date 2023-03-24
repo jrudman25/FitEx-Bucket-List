@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route}
   from 'react-router-dom';
 import './App.css';
 import NavBar from './NavBar';
+import Sidebar from "./Sidebar";
 import Login from './Login';
 import Home from './Home';
 import Leaderboard from './Leaderboard';
@@ -13,7 +14,8 @@ import Group from './Group'
 function App() {
     return (
         <Router>
-            <NavBar />
+            <Sidebar/>
+            <NavBar></NavBar>
             <Routes>
                 <Route exact path='/' exact element={<Login />} />
                 <Route path='/home' element={<Home/>} />
