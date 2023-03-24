@@ -9,7 +9,6 @@ import Home from './Home';
 import Leaderboard from './Leaderboard';
 import Questionnaire from './Questionnaire';
 import BucketList from './BucketList';
-import BucketList2 from './BucketList2';
 import Group from './Group'
 
 function App() {
@@ -20,7 +19,7 @@ function App() {
             <Routes>
                 <Route exact path='/' exact element={<Login />} />
                 <Route path='/home' element={<Home/>} />
-                <Route path='/bucketlist' element={<BucketList2/>} />
+                <Route path='/bucketlist' element={<BucketList/>} />
                 <Route path='/group' element={<Group/>} />
                 <Route path='/leaderboard' element={<Leaderboard/>} />
                 <Route path='/questionnaire' element={<Questionnaire/>} />

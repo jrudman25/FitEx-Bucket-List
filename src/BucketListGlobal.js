@@ -34,7 +34,7 @@ type BucketListItem = {
 }
 
 
-const bucketList2: BucketListItem[] = [
+const bucketList: BucketListItem[] = [
     {
         name: "Sample",
         difficulty: "HARD",
@@ -278,4 +278,4 @@ const bucketList2: BucketListItem[] = [
         image: spur
     }
 ];
-export default bucketList2;
+export default bucketList;
