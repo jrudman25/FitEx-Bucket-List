@@ -42,6 +42,44 @@ const BucketList2 = () => {
         return completedItems.includes(itemName);
     }
 
+    const coordinates = () => {
+        setStatus("checking geolocation");
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setLat(position.coords.latitude);
+                setLng(position.coords.longitude);
+                setStatus("Successfully got the Coordinates");
+            }, () => {
+                setStatus("No coordinates available");
+            });
+        }
+        else {
+            setStatus("Geolocation is not supported");
+        }
+    }
+
+    const checkCoordinates = (location_str) => {
+        setStatus("Gathering Coordinates");
+        coordinates()
+        setStatus(null);
+        if (location_str === "Home") {
+            if (lat >= 37.24 && lat <= 37.25 && lng >= -80.43 && lng <= -80.42) {
+                alert("You are able to begin this hike!")
+            }
+            else {
+                alert("You are not within range to start this hike :(");
+            }
+        }
+        else if (location_str === "Lib") {
+            if (lat >= 37.22 && lat <= 37.23 && lng >= -80.42 && lng <= -80.41) {
+                alert("You are able to begin this hike!");
+            }
+            else {
+                alert("You are not within range to start this hike :(");
+            }
+        }
+    }
+
     return (
         <React.Fragment>
             <BottomNavigation sx={{ width: '100%', maxWidth: '500px', margin: '0 auto' }} value={value} onChange={handleChange}>
@@ -71,7 +109,7 @@ const BucketList2 = () => {
                 <Box>
                     {BucketListGlobal.map((item, index) => (
                         <React.Fragment key={index}>
-                            <Card sx={{ maxWidth: 499 }} onClick={() => handleClick(item.name)}>
+                            <Card sx={{ maxWidth: 499 }} >
                                 <CardMedia
                                     sx={{ height: 140 }}
                                     component="img"
@@ -89,6 +127,10 @@ const BucketList2 = () => {
                                         {item.points} Points
                                     </Typography>
                                 </CardContent>
+                                <CardActions>
+                                    <Button size="small" onClick={() => checkCoordinates("Lib")}>Start</Button>
+                                    <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
+                                </CardActions>
                             </Card>
                             <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
                                 <DialogTitle>{item.name}</DialogTitle>

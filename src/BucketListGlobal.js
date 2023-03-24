@@ -11,6 +11,7 @@ import poverty from './img/poverty.jfif'
 import pine from './img/pine.jfif'
 import huckleberry from './img/huckleberry.jfif'
 import coal from './img/coal.jfif'
+import midcounty from './img/midcounty.jpg'
 import price from './img/price.jfif'
 import cascades from './img/cascades.jfif'
 import dragon from './img/dragon.jfif'
@@ -178,7 +179,7 @@ const bucketList2: BucketListItem[] = [
         image: coal
     },
     {
-        name: "Nature Trail",
+        name: "Mid County Nature Trail",
         difficulty: "EASY",
         points: 4.25,
         length_distance: 1.7,
@@ -186,7 +187,7 @@ const bucketList2: BucketListItem[] = [
         elevation_gain: 100,
         distance_from_campus: 5.8,
         bonus_quests: [],
-        image: "bucketListIcon.png"
+        image: midcounty
     },
     {
         name: "H.L. Price Trail",
