@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography } from '@mui/material';
+import React, {useState, useEffect} from "react";
+import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography, Link } from '@mui/material';
 import BucketListGlobal from "./BucketListGlobal";
 import ScavengerListGlobal from "./ScavengerListGlobal";
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -8,15 +8,26 @@ import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 import HikingRoundedIcon from '@mui/icons-material/HikingRounded';
 import CameraEnhanceRoundedIcon from '@mui/icons-material/CameraEnhanceRounded';
+import defaultUser from "./img/defaultUser.jpg";
+
 
 const BucketList = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [dialogContent, setDialogContent] = useState("");
     const [completedItems, setCompletedItems] = useState([]);
     const [value, setValue] = React.useState('all');
-    const [lat, setLat] = React.useState(null);
-    const [lng, setLng] = React.useState(null);
+    const [latCurr, setLatCurr] = React.useState(null);
+    const [lngCurr, setLngCurr] = React.useState(null);
+    const [latPrev, setLatPrev] = React.useState(null);
+    const [lngPrev, setLngPrev] = React.useState(null);
     const [status, setStatus] = React.useState(null);
+    const [id, setId] = React.useState(-1);
+    const [distanceTravelled, setDistanceTravelled] = React.useState(0);
+    const [image, setImage] = useState(defaultUser);
+
+    useEffect(() => {
+        console.log("Coordinates have been updated!");
+    }, [latCurr, lngCurr, latPrev, lngPrev]);
 
     const handleClick = (content) => {
         setOpenDialog(true);
@@ -32,50 +43,134 @@ const BucketList = () => {
         setValue(newValue);
     };
 
-    const handleComplete = (itemName) => {
-        setCompletedItems([...completedItems, itemName]);
+    const handleComplete = (index) => {
+        clearWatch();
+        awardPoints(index);
+        setCompletedItems(completedItems => [...completedItems, BucketListGlobal[index]]);
     }
 
-    const isCompleted = (itemName) => {
-        return completedItems.includes(itemName);
+    const clearWatch = () => {
+        setStatus("Clearing watch...");
+        navigator.geolocation.clearWatch(id);
     }
+
+
+    const awardPoints = (index) => {
+        let hike_distance = BucketListGlobal[index].length_distance;
+        let hike_points = BucketListGlobal[index].points;
+        let hike_difficulty = BucketListGlobal[index].difficulty;
+
+        let earned_points_raw = (distanceTravelled / hike_distance) * hike_points;
+        if (hike_difficulty === "EASY" && earned_points_raw > 5) {
+            //award 5
+        }
+        else if (hike_difficulty === "MODERATE" && earned_points_raw > 10) {
+            //award 10
+        }
+        else if (hike_difficulty === "HARD" && earned_points_raw > 15) {
+            //award 15
+        }
+        else {
+            //award earned_points_raw;
+        }
+    }
+
+
+    const isCompleted = (index) => {
+        return completedItems.includes(BucketListGlobal[index]);
+    }
+
+    const handleStart = (index) => {
+        if (checkCoordinates(index)) {
+            watchingPosition();
+        }
+    }
+
+    const distance = (lat1, lng1, lat2, lng2) => {
+        let lat1_rad = lat1 * Math.PI / 180;
+        let lng1_rad = lng1 * Math.PI / 180;
+        let lat2_rad = lat2 * Math.PI / 180;
+        let lng2_rad = lng2 * Math.PI / 180;
+
+        let dlng = lng2_rad - lng1_rad;
+        let dlat = lat2_rad - lat1_rad;
+
+        let haversine = Math.pow(Math.sin(dlat / 2), 2) + Math.cos(lat1_rad) * Math.cos(lat2_rad) * Math.pow(Math.sin(dlng / 2), 2);
+
+        let  c = 2 * Math.asin(Math.sqrt(haversine));
+
+        return c * 3956;
+    }
+
+    const watchingPosition = () => {
+        setStatus("Checking Geolocation...");
+        if (navigator.geolocation) {
+            setStatus("Watching Position...")
+            let x = navigator.geolocation.watchPosition((position) => {
+                setLatPrev(latCurr);
+                setLngPrev(lngCurr);
+                setLatCurr(position.coords.latitude);
+                setLngCurr(position.coords.longitude);
+                let totalDistance = distanceTravelled;
+                if (latPrev != null && lngPrev != null) {
+                    let currDistance = distance(latPrev, lngPrev, latCurr, lngCurr);
+                    setDistanceTravelled(totalDistance + currDistance);
+                }
+            }, () => {
+                setStatus("Couldn't get coordinates.")
+            }, {
+                enableHighAccuracy: true
+            });
+            setId(x);
+        }
+        setStatus("Geolocation is not supported.");
+    }
+
+
 
     const coordinates = () => {
-        setStatus("checking geolocation");
+        setStatus("Checking Geolocation...");
         if (navigator.geolocation) {
+            setStatus("Requesting Coordinates...")
             navigator.geolocation.getCurrentPosition((position) => {
-                setLat(position.coords.latitude);
-                setLng(position.coords.longitude);
-                setStatus("Successfully got the Coordinates");
+                setLatCurr(position.coords.latitude);
+                setLngCurr(position.coords.longitude);
+                setStatus("Successfully got the Coordinates!");
             }, () => {
-                setStatus("No coordinates available");
+                setStatus("No coordinates available.");
             });
         }
         else {
-            setStatus("Geolocation is not supported");
+            setStatus("Geolocation is not supported.");
         }
     }
 
-    const checkCoordinates = (location_str) => {
-        setStatus("Gathering Coordinates");
-        coordinates()
-        setStatus(null);
-        if (location_str === "Home") {
-            if (lat >= 37.24 && lat <= 37.25 && lng >= -80.43 && lng <= -80.42) {
-                alert("You are able to begin this hike!")
-            }
-            else {
-                alert("You are not within range to start this hike :(");
-            }
+    const checkCoordinates = (index) => {
+        let hike = BucketListGlobal[index];
+        coordinates();
+        setStatus("Comparing Coordinates...");
+        let hike_lat = hike.lat;
+        let hike_lng = hike.lng;
+        let dis = distance(latCurr, lngCurr, hike_lat, hike_lng);
+        if (dis <= 0.1) {
+            setStatus("Passed!");
+            return true;
         }
-        else if (location_str === "Lib") {
-            if (lat >= 37.22 && lat <= 37.23 && lng >= -80.42 && lng <= -80.41) {
-                alert("You are able to begin this hike!");
-            }
-            else {
-                alert("You are not within range to start this hike :(");
-            }
+        else {
+            setStatus("Failed");
+            alert("Please get closer to the start of the hike!");
+            return false;
         }
+
+
+    }
+
+    const handleImageUpload = (event) => {
+        setImage(URL.createObjectURL(event.target.files[0]));
+    }
+
+    const uploadPic = () => {
+        return;
     }
 
     return (
@@ -126,13 +221,14 @@ const BucketList = () => {
                                     </Typography>
                                 </CardContent>
                                 <CardActions>
-                                    <Button size="small" onClick={() => checkCoordinates("Lib")}>Start</Button>
+                                    <Button size="small" onClick={() => handleStart(index)}>Start</Button>
                                     <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
                                 </CardActions>
                             </Card>
                             <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
                                 <DialogTitle>{item.name}</DialogTitle>
                                 <DialogContent>
+                                    <Link href={item.link} target="_blank">Directions</Link>
                                     <p>Difficulty: {item.difficulty}</p>
                                     <p>Points: {item.points}</p>
                                     <p>Length (distance): {item.length_distance} miles</p>
@@ -149,10 +245,10 @@ const BucketList = () => {
                                             </ul>
                                         </React.Fragment>
                                     )}
-                                    {!isCompleted(item.name) && (
-                                        <Button variant="contained" onClick={() => handleComplete(item.name)}>Complete</Button>
+                                    {!isCompleted(index) && (
+                                        <Button variant="contained" onClick={() => handleComplete(index)}>Complete</Button>
                                     )}
-                                    {isCompleted(item.name) && (
+                                    {isCompleted(index) && (
                                         <p>Completed</p>
                                     )}
                                 </DialogContent>
@@ -185,7 +281,10 @@ const BucketList = () => {
                                     </Typography>
                                 </CardContent>
                                 <CardActions>
-                                    <Button size="small" onClick={() => checkCoordinates("Lib")}>Start</Button>
+                                    <Button size="small" component="label">
+                                        Upload Picture
+                                        <input hidden accept="image/*" multiple type="file"/>
+                                    </Button>
                                     <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
                                 </CardActions>
                             </Card>
@@ -233,22 +332,61 @@ const BucketList = () => {
                 </Card>
             )}
             {value === 'completed' && (
-                <Card sx={{ maxWidth: 499 }}>
-                    <CardMedia
-                        component="img"
-                        alt="hike"
-                        height="140"
-                        image=""
-                    />
-                    <CardContent>
-                        <Typography gutterBottom variant="h5" component="div">
-                            Hike 1
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            Description for hike 1
-                        </Typography>
-                    </CardContent>
-                </Card>
+                <Box>
+                    {completedItems.map((item, index3) => (
+                        <React.Fragment>
+                            <Card sx={{ maxWidth: 499 }} >
+                                <CardMedia
+                                    sx={{ height: 140 }}
+                                    component="img"
+                                    image={item.image}
+                                    alt="hike"
+                                />
+                                <CardContent>
+                                    <Typography gutterBottom variant="h5" component="div">
+                                        {item.name}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {item.difficulty}, {item.length_distance}mi, {item.length_time}min, {item.elevation_gain}ft
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {item.points} Points
+                                    </Typography>
+                                </CardContent>
+                                <CardActions>
+                                    <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
+                                </CardActions>
+                            </Card>
+                            <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
+                                <DialogTitle>{item.name}</DialogTitle>
+                                <DialogContent>
+                                    <Link href={item.link} target="_blank">Directions</Link>
+                                    <p>Difficulty: {item.difficulty}</p>
+                                    <p>Points: {item.points}</p>
+                                    <p>Length (distance): {item.length_distance} miles</p>
+                                    <p>Length (time): {item.length_time} minutes</p>
+                                    <p>Elevation gain: {item.elevation_gain} feet</p>
+                                    <p>Distance from campus: {item.distance_from_campus} miles</p>
+                                    {item.bonus_quests.length > 0 && (
+                                        <React.Fragment>
+                                            <p>Bonus quests:</p>
+                                            <ul>
+                                                {item.bonus_quests.map((quest, index) => (
+                                                    <li key={index}>{quest}</li>
+                                                ))}
+                                            </ul>
+                                        </React.Fragment>
+                                    )}
+                                    <p>Completed</p>
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button onClick={handleClose}>Close</Button>
+                                </DialogActions>
+                            </Dialog>
+                            <p></p>
+                        </React.Fragment>
+                    ))}
+                </Box>
             )}
         </React.Fragment>
 
