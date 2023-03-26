@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 const Survey = () => {
-    const [selectedAnswers, setSelectedAnswers] = useState(Array(3).fill(''));
+    const [selectedAnswers, setSelectedAnswers] = useState(Array(4).fill(''));
     const questions = [
         {
             question: 'How would you rate your fitness level out of 10?',
@@ -16,8 +16,12 @@ const Survey = () => {
             answerChoices: ['0', '1-2', '3-4', '5+']
         },
         {
-            question: 'Do you have a car?',
+            question: 'Do you have a car or transportation?',
             answerChoices: ['Yes', 'No']
+        },
+        {
+            question: 'How long are you willing to travel from campus?',
+            answerChoices: ['Only on campus', '0-10 minutes', '10-30 minutes', '30+ minutes']
         }
     ];
 
