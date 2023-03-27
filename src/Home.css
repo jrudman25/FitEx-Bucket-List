@@ -15,3 +15,22 @@
         height: 50px;
     }
 }
+
+.link-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.home-link {
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0 1rem;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+.home-link:hover {
+    color: #0077ff;
+}

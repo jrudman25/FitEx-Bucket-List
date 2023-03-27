@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import NavBar from './NavBar';
@@ -9,9 +9,11 @@ import Leaderboard from './Leaderboard';
 import Questionnaire from './Questionnaire';
 import BucketList from './BucketList';
 import Group from './Group';
+import Signup from "./Signup";
 
 function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(!!sessionStorage.getItem('username'));
+    const [isLoggedIn, setIsLoggedIn] = useState(sessionStorage.getItem('isLoggedIn'));
+    const [users, setUsers] = useState(JSON.parse(localStorage.getItem('users')) || []);
 
     const handleLogin = () => {
         setIsLoggedIn(true);
@@ -25,14 +27,11 @@ function App() {
 
     return (
         <Router>
-            <Sidebar isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+            <Sidebar isLoggedIn={isLoggedIn} handleLogout={handleLogout} setUsers={setUsers} />
             <NavBar />
             <Routes>
-                <Route
-                    exact
-                    path="/"
-                    element={<Login handleLogin={handleLogin} isLoggedIn={isLoggedIn} />}
-                />
+                <Route exact path="/" element={<Login handleLogin={handleLogin} isLoggedIn={isLoggedIn} users={users} />} />
+                <Route path="/signup" element={<Signup users={users} setUsers={setUsers} />} />
                 <Route path="/home" element={<Home />} />
                 <Route path="/bucketlist" element={<BucketList />} />
                 <Route path="/group" element={<Group />} />

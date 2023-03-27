@@ -3,13 +3,14 @@ import { slide as Menu } from 'react-burger-menu';
 import './Sidebar.css';
 import { useNavigate } from 'react-router-dom';
 
-const Sidebar = () => {
+const Sidebar = ({ setUsers }) => {
     const navigate = useNavigate();
-    const isLoggedIn = !!sessionStorage.getItem('username');
+    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
 
     const handleLogout = () => {
-        sessionStorage.clear();
-        navigate('/', {replace: true});
+        setUsers([]);
+        sessionStorage.setItem('isLoggedIn', false);
+        navigate('/');
     };
 
     return (
@@ -36,12 +37,17 @@ const Sidebar = () => {
                     </a>
                 </>
             ) : (
-                <a className="bm-item" href="/">
-                    Login
-                </a>
+                <>
+                    <a className="bm-item" href="/">
+                        Login
+                    </a>
+                    <a className="bm-item" href="/signup">
+                        Sign-up
+                    </a>
+                </>
             )}
         </Menu>
     );
-}
+};
 
 export default Sidebar;
