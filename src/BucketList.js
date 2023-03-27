@@ -5,7 +5,7 @@ import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 import HikingRoundedIcon from '@mui/icons-material/HikingRounded';
 import CameraEnhanceRoundedIcon from '@mui/icons-material/CameraEnhanceRounded';
-import Box from '@mui/material/Box';
+import GridList from "@material-ui/core/GridList";
 import {Button, Card, CardActions, CardContent, CardMedia, Typography} from "@mui/material";
 
 //Used from: https://mui.com/material-ui/react-bottom-navigation/, https://mui.com/material-ui/react-card/
@@ -42,6 +42,9 @@ export default function BucketList() {
             </BottomNavigation>
 
             {value === 'all' && (
+
+                <GridList cellHeight={"auto"}  spacing={0}>
+
                 <Card sx={{ maxWidth: 499 }}>
                     <CardMedia
                         component="img"
@@ -62,6 +65,8 @@ export default function BucketList() {
                         <Button size="small">Learn More</Button>
                     </CardActions>
                 </Card>
+                </GridList>
+
 
 
 
