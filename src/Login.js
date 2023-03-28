@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
+    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
+    const navigate = useNavigate();
 
     const handleUsernameChange = event => setUsername(event.target.value);
 
@@ -11,7 +13,8 @@ const Login = () => {
         // Use username to authenticate the user
         // Redirect to main screen if login is successful
         // Display error message if login is unsuccessful
-        alert("login attempted with username: " + username)
+        sessionStorage.setItem('username', username);
+        navigate('/home', { username: username });
     };
 
     return (

@@ -58,10 +58,9 @@ Note: Beware of modifying this element as it can break the animations - you shou
 
 /* Individual item */
 .bm-item {
-    display: inline-block;
-
+    display: block;
+    padding: 0.5em 0;
     color: #d1d1d1;
-    margin-bottom: 10px;
     text-align: left;
     text-decoration: none;
     transition: color 0.2s;
@@ -74,4 +73,18 @@ Note: Beware of modifying this element as it can break the animations - you shou
 /* Styling of overlay */
 .bm-overlay {
     background: rgba(0, 0, 0, 0.3);
+}
+
+/* Style the logout button separately */
+.menu-item-logout {
+    display: block;
+    padding: 0.5em 0;
+    color: #d1d1d1;
+    text-align: left;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.menu-item-logout:hover {
+    color: #ffffff;
 }

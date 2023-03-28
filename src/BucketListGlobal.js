@@ -38,6 +38,20 @@ type BucketListItem = {
 
 const bucketList: BucketListItem[] = [
     {
+        name: "Test",
+        difficulty: "HARD",
+        points: 15,
+        length_distance: 20,
+        length_time: 500,
+        elevation_gain: 1200,
+        distance_from_campus: 1,
+        lat: 37.24164962845268,
+        lng: -80.4220291988603,
+        link: "https://www.google.com/maps/dir/37.2416715,-80.4220566//@37.2414292,-80.4222787,17.97z/data=!4m2!4m1!3e0",
+        bonus_quests: [],
+        image: heritage
+    },
+    {
         name: "Heritage Community Park Loop",
         difficulty: "EASY",
         points: 4.75,
