@@ -99,7 +99,6 @@ const scavengerList: ScavengerListItem[] = [
         lat: 37.23019,
         lng: -80.41902
     }
-
 ];
 
 export default scavengerList;

@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 const Signup = () => {
+
     const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
     const navigate = useNavigate();
     const [users, setUsers] = useState(
         JSON.parse(localStorage.getItem('users')) || []
     );
+
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        return <Navigate to="/home" />;
+    }
 
     const handleUsernameChange = event => setUsername(event.target.value);
 

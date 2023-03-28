@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const Questionnaire = () => {
+
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
+    }
+
     const [selectedAnswers, setSelectedAnswers] = useState(Array(4).fill(''));
     const questions = [
         {

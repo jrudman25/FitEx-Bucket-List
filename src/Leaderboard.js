@@ -1,4 +1,5 @@
 import React from 'react';
+import { Navigate } from 'react-router-dom';
 import './Leaderboard.css';
 
 const leaderboardData = [
@@ -9,6 +10,11 @@ const leaderboardData = [
 ];
 
 function Leaderboard() {
+
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
+    }
+
     return (
         <div className="leaderboard-container">
             <h2>Leaderboard</h2>

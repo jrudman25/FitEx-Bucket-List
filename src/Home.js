@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Typography } from '@mui/material';
 import defaultUser from './img/defaultUser.jpg';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import './Home.css';
 
 const Home = () => {
+
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
+    }
+
     const location = useLocation();
 
     const [username, setUsername] = useState(sessionStorage.getItem('username') || '');

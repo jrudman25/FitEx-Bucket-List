@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import './App.css';
 import NavBar from './NavBar';
 import Sidebar from './Sidebar';
@@ -37,6 +38,11 @@ function App() {
                 <Route path="/group" element={<Group />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/questionnaire" element={<Questionnaire />} />
+                <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/" />} />
+                <Route
+                    path="*"
+                    element={isLoggedIn ? <Home /> : <Login handleLogin={handleLogin} isLoggedIn={isLoggedIn} users={users} />}
+                />
             </Routes>
         </Router>
     );
