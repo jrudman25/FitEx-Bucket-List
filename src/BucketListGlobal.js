@@ -332,4 +332,5 @@ const bucketList: BucketListItem[] = [
         image: spur
     }
 ];
+
 export default bucketList;
