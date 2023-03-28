@@ -16,21 +16,25 @@ const Home = () => {
     }, [location.state]);
 
     const [image, setImage] = useState(getUserImage(username) || defaultUser);
+    useEffect(() => {
+        const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
+        setImage(userImages[username] || defaultUser);
+    }, [username]);
 
     const handleImageUpload = (event) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const base64Image = e.target.result;
-            const userImages = JSON.parse(sessionStorage.getItem('userImages') || '{}');
+            const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
             userImages[username] = base64Image;
-            sessionStorage.setItem('userImages', JSON.stringify(userImages));
+            localStorage.setItem('userImages', JSON.stringify(userImages));
             setImage(base64Image);
         };
         reader.readAsDataURL(event.target.files[0]);
     }
 
     function getUserImage(username) {
-        const userImages = JSON.parse(sessionStorage.getItem('userImages') || '{}');
+        const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
         return userImages[username];
     }
 
