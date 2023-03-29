@@ -6,10 +6,6 @@ import './Home.css';
 
 const Home = () => {
 
-    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
-        return <Navigate to="/" />;
-    }
-
     const location = useLocation();
 
     const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
@@ -41,6 +37,10 @@ const Home = () => {
     function getUserImage(username) {
         const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
         return userImages[username];
+    }
+
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
     }
 
     return (

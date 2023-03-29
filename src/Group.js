@@ -23,10 +23,6 @@ function LinearProgressWithLabel(props) {
 
 const Group = () => {
 
-    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
-        return <Navigate to="/" />;
-    }
-
     const [open, setOpen] = useState(false);
 
     const handleOpen = () => {
@@ -48,6 +44,10 @@ const Group = () => {
     const group_members = ["John", "Ashley", "Bob"];
     const member_progress = [40, 33, 55]
     const group_name = "Hiking Hokies"
+
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
+    }
 
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>
