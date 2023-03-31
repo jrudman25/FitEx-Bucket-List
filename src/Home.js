@@ -8,26 +8,26 @@ const Home = () => {
 
     const location = useLocation();
 
-    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
+    const [email, setEmail] = useState(sessionStorage.getItem('username') || '');
     useEffect(() => {
         if (location.state && location.state.username) {
             sessionStorage.setItem('username', location.state.username);
-            setUsername(location.state.username);
+            setEmail(location.state.username);
         }
     }, [location.state]);
 
-    const [image, setImage] = useState(getUserImage(username) || defaultUser);
+    const [image, setImage] = useState(getUserImage(email) || defaultUser);
     useEffect(() => {
         const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
-        setImage(userImages[username] || defaultUser);
-    }, [username]);
+        setImage(userImages[email] || defaultUser);
+    }, [email]);
 
     const handleImageUpload = (event) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const base64Image = e.target.result;
             const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
-            userImages[username] = base64Image;
+            userImages[email] = base64Image;
             localStorage.setItem('userImages', JSON.stringify(userImages));
             setImage(base64Image);
         };
@@ -47,7 +47,7 @@ const Home = () => {
         <div>
             <div className="image-upload-container">
                 <Typography variant="h4" sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                    Welcome{username ? `, ${username}` : ''}!
+                    Welcome{email ? `, ${email}` : ''}!
                 </Typography>
                 <label htmlFor="image-upload" className="image-upload-label">
                     <input

@@ -2,14 +2,26 @@ import React from 'react';
 import { slide as Menu } from 'react-burger-menu';
 import './Sidebar.css';
 import { useNavigate } from 'react-router-dom';
+import { auth } from './backend/FirebaseConfig';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const Sidebar = ({ setUsers }) => {
     const navigate = useNavigate();
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    const isLoggedIn = onAuthStateChanged(auth, (user) => {
+        if (user) {
+            sessionStorage.setItem('isLoggedIn', true);
+            return true;
+        }
+        else {
+            sessionStorage.setItem('isLoggedIn', false);
+            return false;
+        }
+    } );
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         setUsers([]);
-        sessionStorage.setItem('isLoggedIn', false);
+        await signOut(auth);
+        // sessionStorage.setItem('isLoggedIn', false);
         navigate('/');
     };
 
