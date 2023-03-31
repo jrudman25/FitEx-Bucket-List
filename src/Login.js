@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { db, auth } from './backend/FirebaseConfig';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const Login = () => {
 
-    const [email, setEmail] = useState(sessionStorage.getItem('username') || '');
-    const [password, setPassword] = useState(sessionStorage.getItem('password') || '');
+    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
     const navigate = useNavigate();
     const [users, setUsers] = useState(
         JSON.parse(localStorage.getItem('users')) || []
@@ -17,29 +14,20 @@ const Login = () => {
         return <Navigate to="/home" />;
     }
 
-    const handleUsernameChange = event => setEmail(event.target.value);
+    const handleUsernameChange = event => setUsername(event.target.value);
 
-    const handlePasswordChange = event => setPassword(event.target.value);
-
-    const handleSubmit = async event => {
+    const handleSubmit = event => {
         event.preventDefault();
-        await signInWithEmailAndPassword(auth, email, password).then((cred) => {
-            console.log("success");
-            navigate('/home', { state: { email } });
-            console.log(cred);
-        }).catch((error) => {
-            console.log(error.code);
-        })
-        // Use email to authenticate the user
+        // Use username to authenticate the user
         // Redirect to main screen if login is successful
         // Display error message if login is unsuccessful
-        // if(users.includes(email)) {
-        //     sessionStorage.setItem('isLoggedIn', true);
-        //     navigate('/home', { state: { email } });
-        // }
-        // else {
-        //     alert("This user does not exist")
-        // }
+        if(users.includes(username)) {
+            sessionStorage.setItem('isLoggedIn', true);
+            navigate('/home', { state: { username } });
+        }
+        else {
+            alert("This user does not exist")
+        }
     };
 
     return (
@@ -62,17 +50,8 @@ const Login = () => {
                             id="username"
                             label="Username"
                             type="text"
-                            value={email}
+                            value={username}
                             onChange={handleUsernameChange}
-                            sx={{margin: 0.5}}
-                        />
-                        <TextField
-                            id="password"
-                            label="Password"
-                            type="password"
-                            value={password}
-                            onChange={handlePasswordChange}
-                            sx={{margin: 0.5}}
                         />
                         <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                             Submit

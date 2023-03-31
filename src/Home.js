@@ -1,33 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { Typography } from '@mui/material';
 import defaultUser from './img/defaultUser.jpg';
-import { useLocation, Navigate } from 'react-router-dom';
+import { useLocation, Navigate, useNavigate } from 'react-router-dom';
 import './Home.css';
 
 const Home = () => {
 
     const location = useLocation();
+    const navigate = useNavigate();
 
-    const [email, setEmail] = useState(sessionStorage.getItem('username') || '');
+    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
     useEffect(() => {
         if (location.state && location.state.username) {
             sessionStorage.setItem('username', location.state.username);
-            setEmail(location.state.username);
+            setUsername(location.state.username);
         }
     }, [location.state]);
 
-    const [image, setImage] = useState(getUserImage(email) || defaultUser);
+    const [image, setImage] = useState(getUserImage(username) || defaultUser);
     useEffect(() => {
         const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
-        setImage(userImages[email] || defaultUser);
-    }, [email]);
+        setImage(userImages[username] || defaultUser);
+    }, [username]);
 
     const handleImageUpload = (event) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const base64Image = e.target.result;
             const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
-            userImages[email] = base64Image;
+            userImages[username] = base64Image;
             localStorage.setItem('userImages', JSON.stringify(userImages));
             setImage(base64Image);
         };
@@ -39,6 +40,11 @@ const Home = () => {
         return userImages[username];
     }
 
+    function handleClick(event) {
+        event.preventDefault();
+        navigate('/group', { state: { username } });
+    }
+
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
     }
@@ -47,7 +53,7 @@ const Home = () => {
         <div>
             <div className="image-upload-container">
                 <Typography variant="h4" sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                    Welcome{email ? `, ${email}` : ''}!
+                    Welcome{username ? `, ${username}` : ''}!
                 </Typography>
                 <label htmlFor="image-upload" className="image-upload-label">
                     <input
@@ -61,7 +67,7 @@ const Home = () => {
                 </label>
             </div>
             <div className="link-container">
-                <a href="/group" className="home-link">Group</a>
+                <a href="/group" className="home-link" onClick={handleClick}>Group</a>
                 <a href="/leaderboard" className="home-link">Leaderboard</a>
                 <a href="/bucketlist" className="home-link">Bucket List</a>
             </div>

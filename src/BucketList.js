@@ -140,6 +140,7 @@ const BucketList = () => {
     }
 
     const handleStartHunt = (index) => {
+        alert(index);
         let hunt = ScavengerListGlobal[index];
         let hunt_lat = hunt.lat;
         let hunt_lng = hunt.lng;

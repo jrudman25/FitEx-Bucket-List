@@ -1,20 +1,9 @@
 import React, { useEffect } from 'react';
 import { Nav } from './NavBarElement';
 import bucketListIcon from './img/bucketListIcon.png'
-import { auth } from './backend/FirebaseConfig';
-import { onAuthStateChanged } from 'firebase/auth';
 
 const NavBar = () => {
-    const isLoggedIn = onAuthStateChanged(auth, (user) => {
-        if (user) {
-            sessionStorage.setItem('isLoggedIn', true);
-            return true;
-        }
-        else {
-            sessionStorage.setItem('isLoggedIn', false);
-            return false;
-        }
-    } );
+    const isLoggedIn = !!sessionStorage.getItem('username');
 
     useEffect(() => {
 
