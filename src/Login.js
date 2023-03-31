@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { db, auth } from './backend/FirebaseConfig';
 
 const Login = () => {
 
     const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
+    const [password, setPassword] = useState(sessionStorage.getItem('password') || '');
     const navigate = useNavigate();
     const [users, setUsers] = useState(
         JSON.parse(localStorage.getItem('users')) || []
@@ -15,6 +17,8 @@ const Login = () => {
     }
 
     const handleUsernameChange = event => setUsername(event.target.value);
+
+    const handlePasswordChange = event => setPassword(event.target.value);
 
     const handleSubmit = event => {
         event.preventDefault();
@@ -52,6 +56,15 @@ const Login = () => {
                             type="text"
                             value={username}
                             onChange={handleUsernameChange}
+                            sx={{margin: 0.5}}
+                        />
+                        <TextField
+                            id="password"
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={handlePasswordChange}
+                            sx={{margin: 0.5}}
                         />
                         <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                             Submit

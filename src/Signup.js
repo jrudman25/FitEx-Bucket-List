@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { db, auth } from './backend/FirebaseConfig';
 
 const Signup = () => {
 
     const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
+    const [password, setPassword] = useState(sessionStorage.getItem('password') || '');
     const navigate = useNavigate();
     const [users, setUsers] = useState(
         JSON.parse(localStorage.getItem('users')) || []
@@ -15,6 +17,8 @@ const Signup = () => {
     }
 
     const handleUsernameChange = event => setUsername(event.target.value);
+
+    const handlePasswordChange = event => setPassword((event.target.value));
 
     function isAlphanumeric(str) {
         return /^[a-zA-Z0-9]+$/.test(str);
@@ -63,6 +67,15 @@ const Signup = () => {
                             type="text"
                             value={username}
                             onChange={handleUsernameChange}
+                            sx={{margin: 0.5}}
+                        />
+                        <TextField
+                            id="username"
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={handlePasswordChange}
+                            sx={{margin: 0.5}}
                         />
                         <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                             Submit
@@ -70,7 +83,7 @@ const Signup = () => {
                     </Box>
                 </form>
                 <Typography sx={{ marginTop: '1rem', marginBottom: '0.01rem' }}>
-                    Username must be:
+                    Usernames and Passwords must be:
                 </Typography>
                 <ul>
                     <li>At least 5 characters</li>
