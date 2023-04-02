@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const Questionnaire = () => {
-    const [selectedAnswers, setSelectedAnswers] = useState(Array(5).fill(-1));
+
+    const [selectedAnswers, setSelectedAnswers] = useState(Array(4).fill(''));
     const questions = [
         {
             question: 'How would you rate your fitness level out of 10?',
@@ -61,6 +63,10 @@ const Questionnaire = () => {
         console.log('Total value:', totalValue);
     };
 
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
+    }
+
     return (
         <div className="survey-container">
             <h2>Survey</h2>
@@ -89,7 +95,6 @@ const Questionnaire = () => {
                 <button type="submit">Submit survey</button>
             </form>
         </div>
-
     );
 };
 

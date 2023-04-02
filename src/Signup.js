@@ -11,7 +11,8 @@ let user = {
     group: "",
     email: "",
     user_points: 0,
-    profile_picture: ""
+    profile_picture: "",
+    linked: false
 }
 
 const Signup = () => {
@@ -44,7 +45,6 @@ const Signup = () => {
         await createUserWithEmailAndPassword(auth, email, password).then(async (cred) => {
             console.log(cred);
             user.email = email;
-            user.password = password;
             await setDoc(doc(db, 'users', email), user);
             navigate('/home', {state : email});
         }).catch((error) => {

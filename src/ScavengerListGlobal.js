@@ -20,6 +20,14 @@ type ScavengerListItem = {
 
 const scavengerList: ScavengerListItem[] = [
     {
+        name: "Test",
+        objective: "To test",
+        points: 2,
+        image: sunset,
+        lat: 37.24164121519086,
+        lng: -80.42195130400466
+    },
+    {
         name: "Sunset Picture",
         objective: "Take a picture of the drillfield at sunset.",
         points: 2,

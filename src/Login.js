@@ -27,6 +27,7 @@ const Login = () => {
             console.log("success");
             navigate('/home', { state: { email } });
             console.log(cred);
+            console.log(auth.currentUser);
         }).catch((error) => {
             console.log(error.code);
         })
