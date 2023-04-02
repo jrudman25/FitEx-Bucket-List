@@ -21,11 +21,11 @@ type ScavengerListItem = {
 const scavengerList: ScavengerListItem[] = [
     {
         name: "Test",
-        objective: "To test the file system out",
+        objective: "To test",
         points: 2,
         image: sunset,
-        lat: 37.24164962845268,
-        lng: -80.4220291988603,
+        lat: 37.24164121519086,
+        lng: -80.42195130400466
     },
     {
         name: "Sunset Picture",
@@ -107,7 +107,6 @@ const scavengerList: ScavengerListItem[] = [
         lat: 37.23019,
         lng: -80.41902
     }
-
 ];
 
 export default scavengerList;

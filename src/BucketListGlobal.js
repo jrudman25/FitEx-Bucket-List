@@ -39,15 +39,15 @@ type BucketListItem = {
 const bucketList: BucketListItem[] = [
     {
         name: "Test",
-        difficulty: "HARD",
-        points: 15,
-        length_distance: 20,
-        length_time: 500,
-        elevation_gain: 1200,
-        distance_from_campus: 1,
-        lat: 37.24164962845268,
-        lng: -80.4220291988603,
-        link: "https://www.google.com/maps/dir/37.2416715,-80.4220566//@37.2414292,-80.4222787,17.97z/data=!4m2!4m1!3e0",
+        difficulty: "EASY",
+        points: 4.75,
+        length_distance: 1.9,
+        length_time: 44,
+        elevation_gain: 167,
+        distance_from_campus: 2.6,
+        lat: 37.24164121519086,
+        lng: -80.42195130400466,
+        link: "https://www.google.com/maps/place/Heritage+Trail+Parking/@37.2378712,-80.4603707,18.2z/data=!4m14!1m7!3m6!1s0x884d9511f04b9779:0xcff521bc5162ad6!2sVirginia+Tech!8m2!3d37.2283843!4d-80.4234167!16zL20vMDFqc3dx!3m5!1s0x884deab155120683:0x1b08e18fbbb4128d!8m2!3d37.2377515!4d-80.460571!16s%2Fg%2F11clhqvc8j",
         bonus_quests: [],
         image: heritage
     },
@@ -346,4 +346,5 @@ const bucketList: BucketListItem[] = [
         image: spur
     }
 ];
+
 export default bucketList;
