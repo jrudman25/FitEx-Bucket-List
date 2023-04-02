@@ -1,44 +1,53 @@
 import React, { useState, useEffect } from "react";
 import { Typography } from '@mui/material';
 import defaultUser from './img/defaultUser.jpg';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Navigate } from 'react-router-dom';
 import './Home.css';
 
 const Home = () => {
+
     const location = useLocation();
 
-    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
+    const [email, setEmail] = useState(sessionStorage.getItem('username') || '');
     useEffect(() => {
         if (location.state && location.state.username) {
             sessionStorage.setItem('username', location.state.username);
-            setUsername(location.state.username);
+            setEmail(location.state.username);
         }
     }, [location.state]);
 
-    const [image, setImage] = useState(getUserImage(username) || defaultUser);
+    const [image, setImage] = useState(getUserImage(email) || defaultUser);
+    useEffect(() => {
+        const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
+        setImage(userImages[email] || defaultUser);
+    }, [email]);
 
     const handleImageUpload = (event) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             const base64Image = e.target.result;
-            const userImages = JSON.parse(sessionStorage.getItem('userImages') || '{}');
-            userImages[username] = base64Image;
-            sessionStorage.setItem('userImages', JSON.stringify(userImages));
+            const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
+            userImages[email] = base64Image;
+            localStorage.setItem('userImages', JSON.stringify(userImages));
             setImage(base64Image);
         };
         reader.readAsDataURL(event.target.files[0]);
     }
 
     function getUserImage(username) {
-        const userImages = JSON.parse(sessionStorage.getItem('userImages') || '{}');
+        const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
         return userImages[username];
+    }
+
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
     }
 
     return (
         <div>
             <div className="image-upload-container">
                 <Typography variant="h4" sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                    Welcome{username ? `, ${username}` : ''}!
+                    Welcome{email ? `, ${email}` : ''}!
                 </Typography>
                 <label htmlFor="image-upload" className="image-upload-label">
                     <input

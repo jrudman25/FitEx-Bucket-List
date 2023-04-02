@@ -1,5 +1,6 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useRef} from "react";
 import { Box, Button, Dialog, DialogTitle, DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography, Link } from '@mui/material';
+import { Navigate } from 'react-router-dom';
 import BucketListGlobal from "./BucketListGlobal";
 import ScavengerListGlobal from "./ScavengerListGlobal";
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -8,8 +9,6 @@ import DoneAllRoundedIcon from '@mui/icons-material/DoneAllRounded';
 import FormatListBulletedRoundedIcon from '@mui/icons-material/FormatListBulletedRounded';
 import HikingRoundedIcon from '@mui/icons-material/HikingRounded';
 import CameraEnhanceRoundedIcon from '@mui/icons-material/CameraEnhanceRounded';
-import defaultUser from "./img/defaultUser.jpg";
-
 
 const BucketList = () => {
     const [openDialog, setOpenDialog] = useState(false);
@@ -20,14 +19,14 @@ const BucketList = () => {
     const [lngCurr, setLngCurr] = React.useState(null);
     const [latPrev, setLatPrev] = React.useState(null);
     const [lngPrev, setLngPrev] = React.useState(null);
-    const [status, setStatus] = React.useState(null);
     const [id, setId] = React.useState(-1);
     const [distanceTravelled, setDistanceTravelled] = React.useState(0);
-    const [image, setImage] = useState(defaultUser);
+    const [started, setStarted] = useState(-1);
+    const inputFile = useRef(null);
 
-    useEffect(() => {
-        console.log("Coordinates have been updated!");
-    }, [latCurr, lngCurr, latPrev, lngPrev]);
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
+    }
 
     const handleClick = (content) => {
         setOpenDialog(true);
@@ -44,16 +43,25 @@ const BucketList = () => {
     };
 
     const handleComplete = (index) => {
-        clearWatch();
-        awardPoints(index);
-        setCompletedItems(completedItems => [...completedItems, BucketListGlobal[index]]);
+        if (started === index) {
+            clearWatch();
+            awardPoints(index);
+            setDistanceTravelled(0);
+            setLatCurr(null);
+            setLngCurr(null);
+            setLatPrev(null);
+            setLngPrev(null);
+            setCompletedItems(completedItems => [...completedItems, BucketListGlobal[index]]);
+        }
+        else {
+            alert("You need to start the hike to be able to complete it!");
+        }
     }
 
     const clearWatch = () => {
-        setStatus("Clearing watch...");
+        alert("We have stopped tracking your position");
         navigator.geolocation.clearWatch(id);
     }
-
 
     const awardPoints = (index) => {
         let hike_distance = BucketListGlobal[index].length_distance;
@@ -80,11 +88,86 @@ const BucketList = () => {
         return completedItems.includes(BucketListGlobal[index]);
     }
 
-    const handleStart = (index) => {
-        if (checkCoordinates(index)) {
-            watchingPosition();
+    const handleStartHike = (index) => {
+        let hike = BucketListGlobal[index];
+        let hike_lat = hike.lat;
+        let hike_lng = hike.lng;
+        let dis_travelled = 0;
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setLatCurr(position.coords.latitude);
+                setLngCurr(position.coords.longitude);
+                let lat = position.coords.latitude;
+                let lng = position.coords.longitude;
+                let dis = distance(lat, lng, hike_lat, hike_lng);
+                if (dis <= 0.1) {
+                    alert("The hike has been started, we are tracking your position, you may turn off your phone but do not exit the page.");
+                    setStarted(index);
+                    let x = navigator.geolocation.watchPosition((position) => {
+                        setId(x);
+                        setLatPrev(latCurr);
+                        setLngPrev(lngCurr);
+                        setLatCurr(position.coords.latitude);
+                        setLngCurr(position.coords.longitude);
+                        let lat_prev = lat;
+                        let lng_prev = lng;
+                        lat = position.coords.latitude;
+                        lng = position.coords.longitude;
+                        if (lat_prev != null && lng_prev != null) {
+                            dis_travelled = dis_travelled + distance(lat_prev, lng_prev, lat, lng);
+                            setDistanceTravelled(dis_travelled);
+                        }
+
+                    }, () => {
+                        alert("Lost your position");
+                    }, {
+                        enableHighAccuracy: true
+                    })
+                }
+                else {
+                    alert("Please get closer to the beginning of the hike!");
+                }
+            }, () => {
+                alert("Couldn't get your coordinates");
+            }, {
+                enableHighAccuracy: true
+            })
+        }
+        else {
+            alert("Geolocation is not supported");
         }
     }
+
+    const handleStartHunt = (index) => {
+        let hunt = ScavengerListGlobal[index];
+        let hunt_lat = hunt.lat;
+        let hunt_lng = hunt.lng;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                setLatCurr(position.coords.latitude);
+                setLngCurr(position.coords.longitude);
+                let lat = position.coords.latitude;
+                let lng = position.coords.longitude;
+                let dis = distance(lat, lng, hunt_lat, hunt_lng);
+                if (dis <= 0.1) {
+                    inputFile.current.click();
+                }
+                else {
+                    alert("Please get closer to the hunt!");
+
+                }
+            }, () => {
+                alert("Couldn't get your coordinates");
+            }, {
+                enableHighAccuracy: true
+            });
+        }
+        else {
+            alert("Geolocation is not supported");
+        }
+    }
+
 
     const distance = (lat1, lng1, lat2, lng2) => {
         let lat1_rad = lat1 * Math.PI / 180;
@@ -102,76 +185,6 @@ const BucketList = () => {
         return c * 3956;
     }
 
-    const watchingPosition = () => {
-        setStatus("Checking Geolocation...");
-        if (navigator.geolocation) {
-            setStatus("Watching Position...")
-            let x = navigator.geolocation.watchPosition((position) => {
-                setLatPrev(latCurr);
-                setLngPrev(lngCurr);
-                setLatCurr(position.coords.latitude);
-                setLngCurr(position.coords.longitude);
-                let totalDistance = distanceTravelled;
-                if (latPrev != null && lngPrev != null) {
-                    let currDistance = distance(latPrev, lngPrev, latCurr, lngCurr);
-                    setDistanceTravelled(totalDistance + currDistance);
-                }
-            }, () => {
-                setStatus("Couldn't get coordinates.")
-            }, {
-                enableHighAccuracy: true
-            });
-            setId(x);
-        }
-        setStatus("Geolocation is not supported.");
-    }
-
-
-
-    const coordinates = () => {
-        setStatus("Checking Geolocation...");
-        if (navigator.geolocation) {
-            setStatus("Requesting Coordinates...")
-            navigator.geolocation.getCurrentPosition((position) => {
-                setLatCurr(position.coords.latitude);
-                setLngCurr(position.coords.longitude);
-                setStatus("Successfully got the Coordinates!");
-            }, () => {
-                setStatus("No coordinates available.");
-            });
-        }
-        else {
-            setStatus("Geolocation is not supported.");
-        }
-    }
-
-    const checkCoordinates = (index) => {
-        let hike = BucketListGlobal[index];
-        coordinates();
-        setStatus("Comparing Coordinates...");
-        let hike_lat = hike.lat;
-        let hike_lng = hike.lng;
-        let dis = distance(latCurr, lngCurr, hike_lat, hike_lng);
-        if (dis <= 0.1) {
-            setStatus("Passed!");
-            return true;
-        }
-        else {
-            setStatus("Failed");
-            alert("Please get closer to the start of the hike!");
-            return false;
-        }
-
-
-    }
-
-    const handleImageUpload = (event) => {
-        setImage(URL.createObjectURL(event.target.files[0]));
-    }
-
-    const uploadPic = () => {
-        return;
-    }
 
     return (
         <React.Fragment>
@@ -221,7 +234,7 @@ const BucketList = () => {
                                     </Typography>
                                 </CardContent>
                                 <CardActions>
-                                    <Button size="small" onClick={() => handleStart(index)}>Start</Button>
+                                    <Button size="small" onClick={() => handleStartHike(index)}>Start</Button>
                                     <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
                                 </CardActions>
                             </Card>
@@ -281,9 +294,9 @@ const BucketList = () => {
                                     </Typography>
                                 </CardContent>
                                 <CardActions>
-                                    <Button size="small" component="label">
+                                    <Button size="small" onClick={() => handleStartHunt(index2)}>
                                         Upload Picture
-                                        <input hidden accept="image/*" multiple type="file"/>
+                                        <input hidden accept="image/*" multiple type="file" ref={inputFile}/>
                                     </Button>
                                     <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
                                 </CardActions>

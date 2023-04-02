@@ -1,10 +1,9 @@
 import React, {useState} from "react";
 import Typography from '@mui/material/Typography';
 import {Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from "@mui/material";
+import { Navigate } from 'react-router-dom';
 import LinearProgress from '@mui/material/LinearProgress';
 import Groups2RoundedIcon from '@mui/icons-material/Groups2Rounded';
-//import '@material-ui/core/styles';
-
 
 //from: https://mui.com/material-ui/react-progress/
 function LinearProgressWithLabel(props) {
@@ -21,7 +20,6 @@ function LinearProgressWithLabel(props) {
         </Box>
     );
 }
-
 
 const Group = () => {
 
@@ -46,6 +44,10 @@ const Group = () => {
     const group_members = ["John", "Ashley", "Bob"];
     const member_progress = [40, 33, 55]
     const group_name = "Hiking Hokies"
+
+    if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
+        return <Navigate to="/" />;
+    }
 
     return (
         <Box sx={{ display: 'flex', justifyContent: 'center' }}>

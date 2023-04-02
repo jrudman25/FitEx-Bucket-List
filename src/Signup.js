@@ -1,15 +1,35 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { db, auth } from './backend/FirebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+
+let user = {
+    bucketlist: [],
+    completed: [],
+    group: "",
+    email: "",
+    user_points: 0,
+    profile_picture: ""
+}
 
 const Signup = () => {
-    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const navigate = useNavigate();
     const [users, setUsers] = useState(
         JSON.parse(localStorage.getItem('users')) || []
     );
 
-    const handleUsernameChange = event => setUsername(event.target.value);
+    if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        return <Navigate to="/home" />;
+    }
+
+    const handleUsernameChange = event => setEmail(event.target.value);
+
+    const handlePasswordChange = event => setPassword((event.target.value));
 
     function isAlphanumeric(str) {
         return /^[a-zA-Z0-9]+$/.test(str);
@@ -19,21 +39,35 @@ const Signup = () => {
         return (name.length >= 5 && isAlphanumeric(name));
     }
 
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
         event.preventDefault();
-        if (!users.includes(username) && validUser(username)) {
-            const updatedUsers = [...users, username];
-            localStorage.setItem('users', JSON.stringify(updatedUsers));
-            setUsers(updatedUsers);
-            sessionStorage.setItem('username', username);
-            navigate('/', { username: username });
-        }
-        else if(!validUser(username)) {
-            alert('Invalid name!');
-        }
-        else {
-            alert('Username already taken!');
-        }
+        await createUserWithEmailAndPassword(auth, email, password).then(async (cred) => {
+            console.log(cred);
+            user.email = email;
+            user.password = password;
+            await setDoc(doc(db, 'users', email), user);
+            navigate('/home', {state : email});
+        }).catch((error) => {
+            if (error.code === 'auth/email-already-in-use') {
+                alert("This email is already in use. Please sign up with a different email.");
+            }
+            else {
+                console.log(error.code);
+            }
+        })
+        // if (!users.includes(email) && validUser(email)) {
+        //     const updatedUsers = [...users, email];
+        //     localStorage.setItem('users', JSON.stringify(updatedUsers));
+        //     setUsers(updatedUsers);
+        //     sessionStorage.setItem('email', email);
+        //     navigate('/', { email: email });
+        // }
+        // else if(!validUser(email)) {
+        //     alert('Invalid name!');
+        // }
+        // else {
+        //     alert('Username already taken!');
+        // }
     };
 
     return (
@@ -56,8 +90,17 @@ const Signup = () => {
                             id="username"
                             label="Username"
                             type="text"
-                            value={username}
+                            value={email}
                             onChange={handleUsernameChange}
+                            sx={{margin: 0.5}}
+                        />
+                        <TextField
+                            id="password"
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={handlePasswordChange}
+                            sx={{margin: 0.5}}
                         />
                         <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                             Submit
@@ -65,7 +108,7 @@ const Signup = () => {
                     </Box>
                 </form>
                 <Typography sx={{ marginTop: '1rem', marginBottom: '0.01rem' }}>
-                    Username must be:
+                    Usernames and Passwords must be:
                 </Typography>
                 <ul>
                     <li>At least 5 characters</li>
