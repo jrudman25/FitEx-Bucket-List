@@ -14,7 +14,7 @@ const Login = () => {
     );
 
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
-        return <Navigate to="/home" />;
+        return <Navigate to="/bucketlist" />;
     }
 
     const handleUsernameChange = event => setEmail(event.target.value);
@@ -25,7 +25,7 @@ const Login = () => {
         event.preventDefault();
         await signInWithEmailAndPassword(auth, email, password).then((cred) => {
             console.log("success");
-            navigate('/home', { state: { email } });
+            navigate('/bucketlist', { state: { email } });
             console.log(cred);
             console.log(auth.currentUser);
         }).catch((error) => {

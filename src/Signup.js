@@ -4,10 +4,13 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { db, auth } from './backend/FirebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import BucketListGlobal from './BucketListGlobal';
+import ScavengerListGlobal from './ScavengerListGlobal';
 
 let user = {
-    bucketlist: [],
+    bucketlist: BucketListGlobal,
     completed: [],
+    scavengerlist: ScavengerListGlobal,
     group: "",
     email: "",
     user_points: 0,
