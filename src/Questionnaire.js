@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 
+let totalValue = 0;
+
 const Questionnaire = () => {
 
     const [selectedAnswers, setSelectedAnswers] = useState(Array(4).fill(''));
@@ -59,7 +61,8 @@ const Questionnaire = () => {
 
     const handleSurveySubmit = (event) => {
         event.preventDefault();
-        const totalValue = selectedAnswers.reduce((total, answerValue) => total + answerValue, 0);
+        totalValue = selectedAnswers.reduce((total, answerValue) => total + answerValue, 0);
+        localStorage.setItem('RecommenderVal', totalValue);
         console.log('Total value:', totalValue);
     };
 
