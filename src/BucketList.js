@@ -52,9 +52,11 @@ const BucketList = () => {
                         await getDoc(groupRef).then((groupDoc) => {
                             let groupDocClone = {... groupDoc.data() };
                             setUserGroup(groupDocClone);
-                            for (let i = 0; i < groupDoc.data().members.length; i++) {
-                                setGroupMembers(groupMembers => [...groupMembers, {name: groupDocClone.members[i], bool: false}]);
-                                if (i === groupDoc.data().members.length - 1) {
+                            for (let i = 0; i < groupDocClone.members.length; i++) {
+                                if (groupDocClone.members[i] !== auth.currentUser.email) {
+                                    setGroupMembers(groupMembers => [...groupMembers, {name: groupDocClone.members[i], bool: false}]);
+                                }
+                                if (i === groupDocClone.members.length - 1) {
                                     setAcquiredData(true);
                                 }
                             }
@@ -63,7 +65,7 @@ const BucketList = () => {
 
                     });
 
-                    onSnapshot(userRef, (userDoc) => {
+                    const unsub = onSnapshot(userRef, (userDoc) => {
                         setLinked(userDoc.data().linked);
                     })
                 }
@@ -148,6 +150,7 @@ const BucketList = () => {
     const continueAsLinked = (index) => {
         if (started === -1 && index !== -1) {
             setLinkedDialog(false);
+            setDialogContent(BucketListGlobal[index].name);
             handleStartHike(index, "all");
         }
         else if (index === -1) {
@@ -196,7 +199,6 @@ const BucketList = () => {
 
     //performs all the necessary functions when a hike is completed
     const handleComplete = async (index, from) => {
-        console.log(from);
         let hike;
         if (from === "all") {
             hike = BucketListGlobal[index];
@@ -253,6 +255,7 @@ const BucketList = () => {
 
     //awards points to the user
     const awardPoints = async (index, from) => {
+        alert(distanceTravelled);
         let hike;
         if (from === "all") {
             hike = BucketListGlobal[index];
@@ -293,6 +296,7 @@ const BucketList = () => {
         }
         else {
             earned_points_raw = (distanceTravelled / hike_distance) * hike_points;
+            alert(earned_points_raw);
             if (hike_difficulty === "EASY" && earned_points_raw > 5) {
                 await updateDoc(userRef, {user_points: increment(5)}).then(() => {
                     console.log("Successfully awarded user " + String(5) + " points.");
@@ -342,10 +346,9 @@ const BucketList = () => {
                 let lat = position.coords.latitude;
                 let lng = position.coords.longitude;
                 let dis = distance(lat, lng, hike_lat, hike_lng);
-                if (dis <= 0.1) {
+                if (dis <= 0.5) {
                     alert("The hike has been started, we are tracking your position, you may turn off your phone but do not exit the page.");
                     setStarted(index);
-                    setDialogContent(BucketListGlobal[index].name);
                     let x = navigator.geolocation.watchPosition((position) => {
                         setId(x);
                         setLatPrev(latCurr);
@@ -556,7 +559,7 @@ const BucketList = () => {
                                         </React.Fragment>
                                     )}
                                     {!isCompleted(index) && (
-                                        <Button variant="contained" onClick={() => handleComplete(index)}>Complete</Button>
+                                        <Button variant="contained" onClick={() => handleComplete(index, "all")}>Complete</Button>
                                     )}
                                     {isCompleted(index) && (
                                         <p>Completed</p>
@@ -571,13 +574,13 @@ const BucketList = () => {
                                 <DialogContent>
                                     <FormLabel component="legend">Members:</FormLabel>
                                     <FormGroup>
-                                        {acquiredData && userGroup.members.map((item) => (
+                                        {acquiredData && groupMembers.map((item) => (
                                             <FormControlLabel
                                                 control={
-                                                    <Checkbox onChange={() => handleCheckboxChange(item)} name={item}/>
+                                                    <Checkbox onChange={() => handleCheckboxChange(item.name)} name={item.name}/>
                                                 }
-                                                key={item}
-                                                label={item}
+                                                key={item.name}
+                                                label={item.name}
                                                 sx={{ marginLeft: 2 }}
                                             />
                                         ))}
@@ -634,7 +637,7 @@ const BucketList = () => {
                                     <p>Objective: {item.objective}</p>
                                     <p>Points: {item.points}</p>
                                     {!isCompleted(item.name) && (
-                                        <Button variant="contained" onClick={() => handleComplete(item.name)}>Complete</Button>
+                                        <Button variant="contained" onClick={() => handleComplete(item.name, "hunt")}>Complete</Button>
                                     )}
                                     {isCompleted(item.name) && (
                                         <p>Completed</p>
@@ -702,7 +705,7 @@ const BucketList = () => {
                                         </React.Fragment>
                                     )}
                                     {!isCompleted(index3) && (
-                                        <Button variant="contained" onClick={() => handleComplete(index3)}>Complete</Button>
+                                        <Button variant="contained" onClick={() => handleComplete(index3, "hikes")}>Complete</Button>
                                     )}
                                     {isCompleted(index3) && (
                                         <p>Completed</p>
@@ -717,13 +720,13 @@ const BucketList = () => {
                                 <DialogContent>
                                     <FormLabel component="legend">Members:</FormLabel>
                                     <FormGroup>
-                                        {acquiredData && userGroup.members.map((item) => (
+                                        {acquiredData && groupMembers.map((item) => (
                                             <FormControlLabel
                                                 control={
-                                                    <Checkbox onChange={() => handleCheckboxChange(item)} name={item}/>
+                                                    <Checkbox onChange={() => handleCheckboxChange(item.name)} name={item.name}/>
                                                 }
-                                                key={item}
-                                                label={item}
+                                                key={item.name}
+                                                label={item.name}
                                                 sx={{ marginLeft: 2 }}
                                             />
                                         ))}
