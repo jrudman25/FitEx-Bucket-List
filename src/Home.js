@@ -4,17 +4,18 @@ import {
     Button,
     Card,
     CardActions,
-    CardContent,
+    CardContent, CardHeader,
     CardMedia, Checkbox,
     Dialog, DialogActions,
     DialogContent,
-    DialogTitle, FormControlLabel, FormGroup, FormLabel, Link,
+    DialogTitle, FormControlLabel, FormGroup, FormLabel, IconButton, Link,
     Typography
 } from '@mui/material';
 import defaultUser from './img/defaultUser.jpg';
 import { useLocation, Navigate } from 'react-router-dom';
 import './Home.css';
 import BucketListGlobal from "./BucketListGlobal";
+import {ChevronLeft, ChevronRight} from "@mui/icons-material";
 
 const Home = () => {
 
@@ -57,6 +58,13 @@ const Home = () => {
 
     const totalVal = localStorage.getItem('RecommenderVal');
 
+    const easyHikes = BucketListGlobal.filter(hike => hike.difficulty === 'EASY');
+    const moderateHikes = BucketListGlobal.filter(hike => hike.difficulty === 'MODERATE');
+    const hardHikes = BucketListGlobal.filter(hike => hike.difficulty === 'HARD');
+
+
+
+
     return (
         <div>
             <div className="image-upload-container">
@@ -86,30 +94,23 @@ const Home = () => {
                 </Typography>
 
                 {0 < totalVal < 4 && (
-                    {BucketListGlobal.map((item) => (
-                            <React.Fragment key={item.name + "_all"}>
-                                <Card sx={{ maxWidth: 499 }} >
-                                    <CardMedia
-                                        sx={{ height: 140 }}
-                                        component="img"
-                                        image={item.image}
-                                        alt="hike"
-                                    />
-                                    <CardContent>
-                                        <Typography gutterBottom variant="h5" component="div">
-                                            {item.name}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {item.difficulty}, {item.length_distance}mi, {item.length_time}min, {item.elevation_gain}ft
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {item.points} Points
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            </React.Fragment>
-                        ))}
-                )}
+                    <Card key={easyHikes.id}>
+                        <CardHeader title={easyHikes.name} subheader={easyHikes.location} />
+                        <CardMedia component="img" height="250" image={easyHikes.image} alt={easyHikes.name} />
+                        <CardContent>
+                            <Typography variant="body2" color="text.secondary">
+                                Distance: {easyHikes.distance} miles
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Difficulty: {easyHikes.difficulty}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                Rating: {easyHikes.rating} stars
+                            </Typography>
+                        </CardContent>
+                    </Card>
+
+                    )}
             </div>
         </div>
     );
