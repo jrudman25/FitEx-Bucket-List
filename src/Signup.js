@@ -8,7 +8,7 @@ import BucketListGlobal from './BucketListGlobal';
 import ScavengerListGlobal from './ScavengerListGlobal';
 
 let user = {
-    bucketlist: BucketListGlobal,
+    bucketlist: [],
     completed: [],
     scavengerlist: ScavengerListGlobal,
     group: "",

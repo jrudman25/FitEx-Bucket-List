@@ -41,9 +41,6 @@ const Sidebar = ({ setUsers }) => {
                     <a className="bm-item" href="/leaderboard">
                         Leaderboard
                     </a>
-                    <a className="bm-item" href="/questionnaire">
-                        Questionnaire
-                    </a>
                     <a className="menu-item-logout" onClick={handleLogout} href="/">
                         Logout
                     </a>
