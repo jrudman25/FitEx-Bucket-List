@@ -1,33 +1,42 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { auth } from './backend/FirebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const Login = () => {
 
-    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const [users, setUsers] = useState(
-        JSON.parse(localStorage.getItem('users')) || []
-    );
 
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
-        return <Navigate to="/home" />;
+        return <Navigate to="/bucketlist" />;
     }
 
-    const handleUsernameChange = event => setUsername(event.target.value);
+    const handleUsernameChange = event => setEmail(event.target.value);
+    const handlePasswordChange = event => setPassword(event.target.value);
 
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
         event.preventDefault();
-        // Use username to authenticate the user
-        // Redirect to main screen if login is successful
-        // Display error message if login is unsuccessful
-        if(users.includes(username)) {
+        await signInWithEmailAndPassword(auth, email, password).then(() => {
+            navigate('/bucketlist');
+            sessionStorage.setItem('username', email);
             sessionStorage.setItem('isLoggedIn', true);
-            navigate('/home', { state: { username } });
-        }
-        else {
-            alert("This user does not exist")
-        }
+        }).catch((error) => {
+            if (error.code === 'auth/invalid-email') {
+                alert("Please log in with a valid email");
+            }
+            else if (error.code === 'auth/user-not-found') {
+                alert("User not found");
+            }
+            else if (error.code === 'auth/wrong-password') {
+                alert("Incorrect password");
+            }
+            else {
+                alert("An unexpected error has occurred. Please reload and try again.");
+            }
+        })
     };
 
     return (
@@ -48,10 +57,19 @@ const Login = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '1rem' }}>
                         <TextField
                             id="username"
-                            label="Username"
+                            label="Email"
                             type="text"
-                            value={username}
+                            value={email}
                             onChange={handleUsernameChange}
+                            sx={{margin: 0.5}}
+                        />
+                        <TextField
+                            id="password"
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={handlePasswordChange}
+                            sx={{margin: 0.5}}
                         />
                         <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                             Submit

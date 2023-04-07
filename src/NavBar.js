@@ -3,7 +3,7 @@ import { Nav } from './NavBarElement';
 import bucketListIcon from './img/bucketListIcon.png'
 
 const NavBar = () => {
-    const isLoggedIn = !!sessionStorage.getItem('username');
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn");
 
     useEffect(() => {
 

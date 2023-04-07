@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { slide as Menu } from 'react-burger-menu';
 import './Sidebar.css';
 import { useNavigate } from 'react-router-dom';
+import { auth } from './backend/FirebaseConfig';
+import { signOut } from 'firebase/auth';
 
-const Sidebar = ({ setUsers }) => {
+const Sidebar = () => {
     const navigate = useNavigate();
     const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+    useEffect(() => {
 
-    const handleLogout = () => {
-        setUsers([]);
+    }, [isLoggedIn]);
+
+    const handleLogout = async () => {
         sessionStorage.setItem('isLoggedIn', false);
+        await signOut(auth);
         navigate('/');
     };
 

@@ -1,44 +1,55 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { db, auth } from './backend/FirebaseConfig';
+import { doc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import BucketListGlobal from './BucketListGlobal';
+import ScavengerListGlobal from './ScavengerListGlobal';
+
+let user = {
+    bucketlist: BucketListGlobal,
+    completed: [],
+    scavengerlist: ScavengerListGlobal,
+    group: "",
+    email: "",
+    user_points: 0,
+    profile_picture: "",
+    linked: false
+}
 
 const Signup = () => {
 
-    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const [users, setUsers] = useState(
-        JSON.parse(localStorage.getItem('users')) || []
-    );
 
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
         return <Navigate to="/home" />;
     }
 
-    const handleUsernameChange = event => setUsername(event.target.value);
+    const handleUsernameChange = event => setEmail(event.target.value);
+    const handlePasswordChange = event => setPassword((event.target.value));
 
-    function isAlphanumeric(str) {
-        return /^[a-zA-Z0-9]+$/.test(str);
-    }
-
-    function validUser(name) {
-        return (name.length >= 5 && isAlphanumeric(name));
-    }
-
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
         event.preventDefault();
-        if (!users.includes(username) && validUser(username)) {
-            const updatedUsers = [...users, username];
-            localStorage.setItem('users', JSON.stringify(updatedUsers));
-            setUsers(updatedUsers);
-            sessionStorage.setItem('username', username);
-            navigate('/', { username: username });
-        }
-        else if(!validUser(username)) {
-            alert('Invalid name!');
-        }
-        else {
-            alert('Username already taken!');
-        }
+        await createUserWithEmailAndPassword(auth, email, password).then(async (cred) => {
+            alert("Successfully created account!")
+            user.email = email;
+            await setDoc(doc(db, 'users', email), user);
+            navigate('/home', {state : email});
+        }).catch((error) => {
+            console.log(error.code)
+            if (error.code === 'auth/email-already-in-use') {
+                alert("This email is already in use. Please sign up with a different email.");
+            }
+            else if(error.code === 'auth/weak-password') {
+                alert("Please create a password that meets the specifications below.")
+            }
+            else {
+                alert("An unexpected error has occurred. Please reload and try again.");
+            }
+        })
     };
 
     return (
@@ -59,10 +70,19 @@ const Signup = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '1rem' }}>
                         <TextField
                             id="username"
-                            label="Username"
+                            label="Email"
                             type="text"
-                            value={username}
+                            value={email}
                             onChange={handleUsernameChange}
+                            sx={{margin: 0.5}}
+                        />
+                        <TextField
+                            id="password"
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={handlePasswordChange}
+                            sx={{margin: 0.5}}
                         />
                         <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                             Submit
@@ -70,14 +90,13 @@ const Signup = () => {
                     </Box>
                 </form>
                 <Typography sx={{ marginTop: '1rem', marginBottom: '0.01rem' }}>
-                    Username must be:
+                    Account Creation Requirements:
                 </Typography>
                 <ul>
-                    <li>At least 5 characters</li>
-                    <li>Alphanumeric</li>
-                    <li>Not already taken by another user</li>
+                    <li>Valid email</li>
+                    <li>Email not already used</li>
+                    <li>Password must be at least 6 characters</li>
                 </ul>
-
             </Box>
         </div>
     );

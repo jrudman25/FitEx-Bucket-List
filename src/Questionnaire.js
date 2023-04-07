@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '@mui/material';
 import { Navigate } from 'react-router-dom';
 
 const Questionnaire = () => {
@@ -92,7 +93,7 @@ const Questionnaire = () => {
                         </ul>
                     </div>
                 ))}
-                <button type="submit">Submit survey</button>
+                <Button type="submit" variant="contained" sx={{ marginTop: '1rem', marginBottom: '1rem' }}>Submit survey</Button>
             </form>
         </div>
     );
