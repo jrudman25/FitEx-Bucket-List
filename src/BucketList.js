@@ -1,5 +1,5 @@
 import React, {useState, useRef, useEffect} from "react";
-import { Box, FormControl, Button, MenuItem, Select, InputLabel, FormHelperText, Dialog, DialogTitle, DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography, Link, FormGroup, FormLabel, FormControlLabel, Checkbox } from '@mui/material';
+import { Box, FormControl, Button, MenuItem, Select, InputLabel, FormHelperText, Dialog, DialogTitle, DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography, Link, FormGroup, FormLabel, FormControlLabel, Checkbox, Alert, Snackbar } from '@mui/material';
 import { Navigate } from 'react-router-dom';
 import BucketListGlobal from "./BucketListGlobal";
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -36,6 +36,8 @@ const BucketList = () => {
     const [linkedDialog, setLinkedDialog] = useState(false);
     const [linkedDialogIndex, setLinkedDialogIndex] = useState(-1);
     const [checkScav, setCheckScav] = useState(false);
+    const [openAlert, setOpenAlert] = useState(false);
+    const [message, setMessage] = useState("");
 
     //loads the necessary data from firebase into the webpage
     useEffect(() => {
@@ -89,6 +91,8 @@ const BucketList = () => {
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
     }
+
+
 
     //opens the dialog for the necessary bucket list item
     const handleClick = (content) => {
@@ -244,6 +248,8 @@ const BucketList = () => {
         let userRef = doc(db, 'users', user.email);
         await updateDoc(userRef, { linked: false }).then(() => {
             console.log("Link has been rejected.");
+            setMessage("You are no longer linked!");
+            setOpenAlert(true);
         });
     }
 
@@ -255,7 +261,6 @@ const BucketList = () => {
 
     //awards points to the user
     const awardPoints = async (index, from) => {
-        alert(distanceTravelled);
         let hike;
         if (from === "all") {
             hike = BucketListGlobal[index];
@@ -276,45 +281,60 @@ const BucketList = () => {
             if (hike_difficulty === "EASY" && earned_points_raw > 5) {
                 await updateDoc(userRef, {user_points: increment(6)}).then(() => {
                     console.log("Successfully awarded user " + String(6) + " points.");
+                    setMessage("You got " + String(6) + " points!");
+                    setOpenAlert(true);
                 });
             }
             else if (hike_difficulty === "MODERATE" && earned_points_raw > 10) {
                 await updateDoc(userRef, {user_points: increment(12)}).then(() => {
                     console.log("Successfully awarded user " + String(12) + " points.");
+                    setMessage("You got " + String(12) + " points!");
+                    setOpenAlert(true);
                 });
             }
             else if (hike_difficulty === "HARD" && earned_points_raw > 15) {
                 await updateDoc(userRef, {user_points: increment(18)}).then(() => {
                     console.log("Successfully awarded user " + String(18) + " points.");
+                    setMessage("You got " + String(18) + " points!");
+                    setOpenAlert(true);
                 });
             }
             else {
                 await updateDoc(userRef, {user_points: increment(earned_points_raw)}).then(() => {
                     console.log("Successfully awarded user " + String(earned_points_raw) + " points.");
+                    setMessage("You got " + String(earned_points_raw.toFixed(2)) + " points!");
+                    setOpenAlert(true);
                 });
              }
         }
         else {
             earned_points_raw = (distanceTravelled / hike_distance) * hike_points;
-            alert(earned_points_raw);
             if (hike_difficulty === "EASY" && earned_points_raw > 5) {
                 await updateDoc(userRef, {user_points: increment(5)}).then(() => {
                     console.log("Successfully awarded user " + String(5) + " points.");
+                    setMessage("You got " + String(5) + " points!");
+                    setOpenAlert(true);
                 });
             }
             else if (hike_difficulty === "MODERATE" && earned_points_raw > 10) {
                 await updateDoc(userRef, {user_points: increment(10)}).then(() => {
                     console.log("Successfully awarded user " + String(10) + " points.");
+                    setMessage("You got " + String(10) + " points!");
+                    setOpenAlert(true);
                 });
             }
             else if (hike_difficulty === "HARD" && earned_points_raw > 15) {
                 await updateDoc(userRef, {user_points: increment(15)}).then(() => {
                     console.log("Successfully awarded user " + String(15) + " points.");
+                    setMessage("You got " + String(15) + " points!");
+                    setOpenAlert(true);
                 });
             }
             else {
                 await updateDoc(userRef, {user_points: earned_points_raw}).then(() => {
                     console.log("Successfully awarded user " + String(earned_points_raw) + " points.");
+                    setMessage("You got " + String(earned_points_raw.toFixed(2)) + " points!");
+                    setOpenAlert(true);
                 });
             }
         }
@@ -347,7 +367,7 @@ const BucketList = () => {
                 let lng = position.coords.longitude;
                 let dis = distance(lat, lng, hike_lat, hike_lng);
                 if (dis <= 0.5) {
-                    alert("The hike has been started, we are tracking your position, you may turn off your phone but do not exit the page.");
+                    alert("The hike has been started, we are tracking your position, do not turn your phone off or close out of the web page.");
                     setStarted(index);
                     let x = navigator.geolocation.watchPosition((position) => {
                         setId(x);
@@ -398,7 +418,6 @@ const BucketList = () => {
                 let lat = position.coords.latitude;
                 let lng = position.coords.longitude;
                 let dis = distance(lat, lng, hunt_lat, hunt_lng);
-                console.log(dis);
                 if (dis <= 0.1) {
                     setCheckScav(true);
                 }
@@ -449,6 +468,8 @@ const BucketList = () => {
                         const userRef = doc(db, 'users', user.email);
                         await updateDoc(userRef, {user_points: increment(2)}).then(() => {
                             console.log("awarded the player 2 points!");
+                            setMessage("You got 2 points!");
+                            setOpenAlert(true);
                             setCheckScav(false);
                             setDialogContent("");
                         })
@@ -818,6 +839,13 @@ const BucketList = () => {
                     <Button size="small" onClick={() => setLinkedDialog(false)}>Cancel</Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={openAlert}
+                autoHideDuration={5000}
+                onClose={() => setOpenAlert(false)}
+            >
+                <Alert severity="success">{message}</Alert>
+            </Snackbar>
         </React.Fragment>
 
     );
