@@ -64,7 +64,6 @@ const Home = () => {
 
 
 
-
     return (
         <div>
             <div className="image-upload-container">
@@ -93,24 +92,79 @@ const Home = () => {
                     Recommended Hikes
                 </Typography>
 
-                {0 < totalVal < 4 && (
-                    <Card key={easyHikes.id}>
-                        <CardHeader title={easyHikes.name} subheader={easyHikes.location} />
-                        <CardMedia component="img" height="250" image={easyHikes.image} alt={easyHikes.name} />
-                        <CardContent>
-                            <Typography variant="body2" color="text.secondary">
-                                Distance: {easyHikes.distance} miles
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Difficulty: {easyHikes.difficulty}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Rating: {easyHikes.rating} stars
-                            </Typography>
-                        </CardContent>
-                    </Card>
+                {0 < totalVal <= 4 && (
+                    {easyHikes.map((item, index) => (
+                            <Card key={index}>
+                                <CardMedia
+                                    component="img"
+                                    height="140"
+                                    image={item.image}
+                                    alt={item.name}
+                                />
+                                <CardContent>
+                                    <Typography variant="h5" component="h2">
+                                        {item.name}
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Points: {item.points}
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Distance: {item.length_distance} miles
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        ))}
 
                     )}
+
+                {4 < totalVal <= 9 && (
+                    {moderateHikes.map((item, index) => (
+                            <Card key={index}>
+                                <CardMedia
+                                    component="img"
+                                    height="140"
+                                    image={item.image}
+                                    alt={item.name}
+                                />
+                                <CardContent>
+                                    <Typography variant="h5" component="h2">
+                                        {item.name}
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Points: {item.points}
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Distance: {item.length_distance} miles
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        ))}
+
+                )}
+                {9 < totalVal <= 12 && (
+                    {hardHikes.map((item, index) => (
+                            <Card key={index}>
+                                <CardMedia
+                                    component="img"
+                                    height="140"
+                                    image={item.image}
+                                    alt={item.name}
+                                />
+                                <CardContent>
+                                    <Typography variant="h5" component="h2">
+                                        {item.name}
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Points: {item.points}
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Distance: {item.length_distance} miles
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        ))}
+
+                )}
             </div>
         </div>
     );
