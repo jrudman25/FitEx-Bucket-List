@@ -4,10 +4,13 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { db, auth } from './backend/FirebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from "firebase/auth";
+import BucketListGlobal from './BucketListGlobal';
+import ScavengerListGlobal from './ScavengerListGlobal';
 
 let user = {
-    bucketlist: [],
+    bucketlist: BucketListGlobal,
     completed: [],
+    scavengerlist: ScavengerListGlobal,
     group: "",
     email: "",
     user_points: 0,
@@ -46,7 +49,7 @@ const Signup = () => {
             console.log(cred);
             user.email = email;
             await setDoc(doc(db, 'users', email), user);
-            navigate('/home', {state : email});
+            navigate('/questionnaire', {state : email});
         }).catch((error) => {
             if (error.code === 'auth/email-already-in-use') {
                 alert("This email is already in use. Please sign up with a different email.");

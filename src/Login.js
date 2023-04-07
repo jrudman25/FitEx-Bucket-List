@@ -14,7 +14,7 @@ const Login = () => {
     );
 
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
-        return <Navigate to="/home" />;
+        return <Navigate to="/bucketlist" />;
     }
 
     const handleUsernameChange = event => setEmail(event.target.value);
@@ -25,22 +25,17 @@ const Login = () => {
         event.preventDefault();
         await signInWithEmailAndPassword(auth, email, password).then((cred) => {
             console.log("success");
-            navigate('/home', { state: { email } });
+            navigate('/bucketlist', { state: { email } });
             console.log(cred);
             console.log(auth.currentUser);
         }).catch((error) => {
-            console.log(error.code);
+            if (error.code === 'auth/invalid-password') {
+                alert("Invalid password!");
+            }
+            else {
+                console.log(error.code);
+            }
         })
-        // Use email to authenticate the user
-        // Redirect to main screen if login is successful
-        // Display error message if login is unsuccessful
-        // if(users.includes(email)) {
-        //     sessionStorage.setItem('isLoggedIn', true);
-        //     navigate('/home', { state: { email } });
-        // }
-        // else {
-        //     alert("This user does not exist")
-        // }
     };
 
     return (
