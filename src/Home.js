@@ -31,7 +31,6 @@ function useUserInvitation(username) {
     return [invitationData, clearInvitation];
 }
 
-
 const Home = () => {
 
     const firestore = getFirestore();
@@ -47,7 +46,6 @@ const Home = () => {
         };
         fetchUserImage();
     }, [username]);
-
 
     const [invitation, clearInvitation] = useUserInvitation(username);
 

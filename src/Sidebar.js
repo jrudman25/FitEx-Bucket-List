@@ -37,6 +37,9 @@ const Sidebar = () => {
                     <a className="bm-item" href="/questionnaire">
                         Questionnaire
                     </a>
+                    <a className="bm-item" href="/contact">
+                        Contact Us
+                    </a>
                     <a className="menu-item-logout" onClick={handleLogout} href="/">
                         Logout
                     </a>
@@ -48,6 +51,9 @@ const Sidebar = () => {
                     </a>
                     <a className="bm-item" href="/signup">
                         Sign-up
+                    </a>
+                    <a className="bm-item" href="/contact">
+                        Contact Us
                     </a>
                 </>
             )}

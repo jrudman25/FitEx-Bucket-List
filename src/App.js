@@ -10,7 +10,8 @@ import Leaderboard from './Leaderboard';
 import Questionnaire from './Questionnaire';
 import BucketList from './BucketList';
 import Group from './Group';
-import Signup from "./Signup";
+import Signup from './Signup';
+import Contact from './Contact'
 
 function App() {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
@@ -27,6 +28,7 @@ function App() {
                 <Route path="/group" element={<Group />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/questionnaire" element={<Questionnaire />} />
+                <Route path="/contact" element={<Contact />} />
                 <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/" />} />
                 <Route
                     path="*"

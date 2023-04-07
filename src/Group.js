@@ -12,6 +12,7 @@ const Group = () => {
     const groupsRef = collection(firestore, "groups");
     const [groupMembers, setGroupMembers] = useState([]);
     const username = sessionStorage.getItem("username");
+    const [open, setOpen] = useState(false);
 
     const [group, setGroup] = useState('');
     useEffect(() => {
@@ -47,9 +48,6 @@ const Group = () => {
             setGroupPoints(0);
         }
     }, [groupData]);
-
-
-    const [open, setOpen] = useState(false);
 
     const handleOpen = () => {
         setOpen(true);
