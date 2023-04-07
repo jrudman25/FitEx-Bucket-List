@@ -274,36 +274,49 @@ const BucketList = () => {
 
         let earned_points_raw;
         let userRef = doc(db, 'users', user.email);
+        let groupRef = doc(db, 'groups', userData.group);
 
         if (linked) {
             earned_points_raw = ((distanceTravelled / hike_distance) * hike_points);
             earned_points_raw = earned_points_raw + (earned_points_raw * 0.2);
-            if (hike_difficulty === "EASY" && earned_points_raw > 5) {
+            if (hike_difficulty === "EASY" && earned_points_raw > 6) {
                 await updateDoc(userRef, {user_points: increment(6)}).then(() => {
                     console.log("Successfully awarded user " + String(6) + " points.");
                     setMessage("You got " + String(6) + " points!");
                     setOpenAlert(true);
                 });
+                await updateDoc(groupRef, {group_points: increment(6)}).then(() => {
+                    console.log("Successfully awarded group " + String(6) + " points.");
+                });
             }
-            else if (hike_difficulty === "MODERATE" && earned_points_raw > 10) {
+            else if (hike_difficulty === "MODERATE" && earned_points_raw > 12) {
                 await updateDoc(userRef, {user_points: increment(12)}).then(() => {
                     console.log("Successfully awarded user " + String(12) + " points.");
                     setMessage("You got " + String(12) + " points!");
                     setOpenAlert(true);
                 });
+                await updateDoc(groupRef, {group_points: increment(12)}).then(() => {
+                    console.log("Successfully awarded group " + String(12) + " points.");
+                });
             }
-            else if (hike_difficulty === "HARD" && earned_points_raw > 15) {
+            else if (hike_difficulty === "HARD" && earned_points_raw > 18) {
                 await updateDoc(userRef, {user_points: increment(18)}).then(() => {
                     console.log("Successfully awarded user " + String(18) + " points.");
                     setMessage("You got " + String(18) + " points!");
                     setOpenAlert(true);
                 });
+                await updateDoc(groupRef, {group_points: increment(18)}).then(() => {
+                    console.log("Successfully awarded group " + String(18) + " points.");
+                });
             }
             else {
                 await updateDoc(userRef, {user_points: increment(earned_points_raw)}).then(() => {
-                    console.log("Successfully awarded user " + String(earned_points_raw) + " points.");
+                    console.log("Successfully awarded user " + String(earned_points_raw.toFixed(2)) + " points.");
                     setMessage("You got " + String(earned_points_raw.toFixed(2)) + " points!");
                     setOpenAlert(true);
+                });
+                await updateDoc(groupRef, {group_points: increment(earned_points_raw)}).then(() => {
+                    console.log("Successfully awarded group " + String(earned_points_raw.toFixed(2)) + " points.");
                 });
              }
         }
@@ -315,12 +328,18 @@ const BucketList = () => {
                     setMessage("You got " + String(5) + " points!");
                     setOpenAlert(true);
                 });
+                await updateDoc(groupRef, {group_points: increment(5)}).then(() => {
+                    console.log("Successfully awarded group " + String(5) + " points.");
+                });
             }
             else if (hike_difficulty === "MODERATE" && earned_points_raw > 10) {
                 await updateDoc(userRef, {user_points: increment(10)}).then(() => {
                     console.log("Successfully awarded user " + String(10) + " points.");
                     setMessage("You got " + String(10) + " points!");
                     setOpenAlert(true);
+                });
+                await updateDoc(groupRef, {group_points: increment(10)}).then(() => {
+                    console.log("Successfully awarded group " + String(10) + " points.");
                 });
             }
             else if (hike_difficulty === "HARD" && earned_points_raw > 15) {
@@ -329,13 +348,20 @@ const BucketList = () => {
                     setMessage("You got " + String(15) + " points!");
                     setOpenAlert(true);
                 });
+                await updateDoc(groupRef, {group_points: increment(15)}).then(() => {
+                    console.log("Successfully awarded group " + String(15) + " points.");
+                });
             }
             else {
                 await updateDoc(userRef, {user_points: earned_points_raw}).then(() => {
-                    console.log("Successfully awarded user " + String(earned_points_raw) + " points.");
+                    console.log("Successfully awarded user " + String(earned_points_raw.toFixed(2)) + " points.");
                     setMessage("You got " + String(earned_points_raw.toFixed(2)) + " points!");
                     setOpenAlert(true);
                 });
+                await updateDoc(groupRef, {group_points: increment(earned_points_raw)}).then(() => {
+                    console.log("Successfully awarded group " + String(earned_points_raw.toFixed(2)) + " points.");
+                });
+
             }
         }
     };
