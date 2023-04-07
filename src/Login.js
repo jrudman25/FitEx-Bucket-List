@@ -29,18 +29,13 @@ const Login = () => {
             console.log(cred);
             console.log(auth.currentUser);
         }).catch((error) => {
-            console.log(error.code);
+            if (error.code === 'auth/invalid-password') {
+                alert("Invalid password!");
+            }
+            else {
+                console.log(error.code);
+            }
         })
-        // Use email to authenticate the user
-        // Redirect to main screen if login is successful
-        // Display error message if login is unsuccessful
-        // if(users.includes(email)) {
-        //     sessionStorage.setItem('isLoggedIn', true);
-        //     navigate('/home', { state: { email } });
-        // }
-        // else {
-        //     alert("This user does not exist")
-        // }
     };
 
     return (
