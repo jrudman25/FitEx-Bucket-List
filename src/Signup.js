@@ -4,7 +4,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { db, auth } from './backend/FirebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import BucketListGlobal from './BucketListGlobal';
 import ScavengerListGlobal from './ScavengerListGlobal';
 
 let user = {
@@ -23,54 +22,35 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const [users, setUsers] = useState(
-        JSON.parse(localStorage.getItem('users')) || []
-    );
 
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
         return <Navigate to="/home" />;
     }
 
     const handleUsernameChange = event => setEmail(event.target.value);
-
     const handlePasswordChange = event => setPassword((event.target.value));
-
-    function isAlphanumeric(str) {
-        return /^[a-zA-Z0-9]+$/.test(str);
-    }
-
-    function validUser(name) {
-        return (name.length >= 5 && isAlphanumeric(name));
-    }
 
     const handleSubmit = async event => {
         event.preventDefault();
         await createUserWithEmailAndPassword(auth, email, password).then(async (cred) => {
-            console.log(cred);
+            alert("Successfully created account!")
             user.email = email;
+            sessionStorage.setItem('username', email);
             await setDoc(doc(db, 'users', email), user);
-            navigate('/questionnaire', {state : email});
+            sessionStorage.setItem("isLoggedIn", true)
+            navigate('/questionnaire');
         }).catch((error) => {
+            console.log(error.code)
             if (error.code === 'auth/email-already-in-use') {
                 alert("This email is already in use. Please sign up with a different email.");
             }
+            else if(error.code === 'auth/weak-password') {
+                alert("Please create a password that meets the specifications below.")
+            }
             else {
-                console.log(error.code);
+                alert("An unexpected error has occurred. Please reload and try again.");
             }
         })
-        // if (!users.includes(email) && validUser(email)) {
-        //     const updatedUsers = [...users, email];
-        //     localStorage.setItem('users', JSON.stringify(updatedUsers));
-        //     setUsers(updatedUsers);
-        //     sessionStorage.setItem('email', email);
-        //     navigate('/', { email: email });
-        // }
-        // else if(!validUser(email)) {
-        //     alert('Invalid name!');
-        // }
-        // else {
-        //     alert('Username already taken!');
-        // }
     };
 
     return (
@@ -91,7 +71,7 @@ const Signup = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '1rem' }}>
                         <TextField
                             id="username"
-                            label="Username"
+                            label="Email"
                             type="text"
                             value={email}
                             onChange={handleUsernameChange}
@@ -111,14 +91,13 @@ const Signup = () => {
                     </Box>
                 </form>
                 <Typography sx={{ marginTop: '1rem', marginBottom: '0.01rem' }}>
-                    Usernames and Passwords must be:
+                    Account Creation Requirements:
                 </Typography>
                 <ul>
-                    <li>At least 5 characters</li>
-                    <li>Alphanumeric</li>
-                    <li>Not already taken by another user</li>
+                    <li>Valid email</li>
+                    <li>Email not already used</li>
+                    <li>Password must be at least 6 characters</li>
                 </ul>
-
             </Box>
         </div>
     );

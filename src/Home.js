@@ -1,80 +1,167 @@
 import React, { useState, useEffect } from "react";
-import {
-    Box,
-    Button,
-    Card,
-    CardActions,
-    CardContent, CardHeader,
-    CardMedia, Checkbox,
-    Dialog, DialogActions,
-    DialogContent,
-    DialogTitle, FormControlLabel, FormGroup, FormLabel, IconButton, Link,
-    Typography
-} from '@mui/material';
+import { Button, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import defaultUser from './img/defaultUser.jpg';
-import { useLocation, Navigate } from 'react-router-dom';
-import './Home.css';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { getFirestore, doc, updateDoc, deleteDoc, arrayUnion } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import BucketListGlobal from "./BucketListGlobal";
-import {ChevronLeft, ChevronRight} from "@mui/icons-material";
+import './Home.css';
+
+function useUserInvitation(username) {
+    const firestore = getFirestore();
+
+    const [invitationData, setInvitationData] = useState(null);
+    useEffect(() => {
+        const fetchInvitation = async () => {
+            const invitationsRef = collection(firestore, "invitations");
+            const invitationQuery = query(invitationsRef, where("email", "==", username));
+            const invitationSnapshot = await getDocs(invitationQuery);
+            if (!invitationSnapshot.empty) {
+                const invitationDoc = invitationSnapshot.docs[0];
+                setInvitationData({ ...invitationDoc.data(), id: invitationDoc.id });
+            }
+        };
+        fetchInvitation();
+    }, [username, firestore]);
+
+    const clearInvitation = () => {
+        setInvitationData(null);
+    };
+
+    return [invitationData, clearInvitation];
+}
 
 const Home = () => {
 
-    const location = useLocation();
+    const firestore = getFirestore();
+    const navigate = useNavigate();
 
-
-    const [email, setEmail] = useState(sessionStorage.getItem('username') || '');
+    const username = sessionStorage.getItem('username');
+    const user = username.substring(0, username.lastIndexOf('@'));
+    const [image, setImage] = useState(getUserImage(username) || defaultUser);
     useEffect(() => {
-        if (location.state && location.state.username) {
-            sessionStorage.setItem('username', location.state.username);
-            setEmail(location.state.username);
-        }
-    }, [location.state]);
-
-    const [image, setImage] = useState(getUserImage(email) || defaultUser);
-    useEffect(() => {
-        const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
-        setImage(userImages[email] || defaultUser);
-    }, [email]);
-
-    const handleImageUpload = (event) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const base64Image = e.target.result;
-            const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
-            userImages[email] = base64Image;
-            localStorage.setItem('userImages', JSON.stringify(userImages));
-            setImage(base64Image);
+        const fetchUserImage = async () => {
+            const imageUrl = await getUserImage(username);
+            setImage(imageUrl || defaultUser);
         };
-        reader.readAsDataURL(event.target.files[0]);
+        fetchUserImage();
+    }, [username]);
+
+    const [invitation, clearInvitation] = useUserInvitation(username);
+
+    const [hasDeclinedInvite, setHasDeclinedInvite] = useState(false);
+    useEffect(() => {
+        if (hasDeclinedInvite) {
+            clearInvitation();
+        }
+    }, [hasDeclinedInvite, clearInvitation]);
+
+    const [hasJoinedGroup, setHasJoinedGroup] = useState(false);
+    useEffect(() => {
+        if (hasJoinedGroup) {
+            clearInvitation();
+            navigate('/group', { state: { username } });
+        }
+    }, [hasJoinedGroup, clearInvitation, navigate, username]);
+
+    const handleImageUpload = async (event) => {
+        const file = event.target.files[0];
+        const storage = getStorage();
+        const storageRef = ref(storage, `profile_pictures/${username}`);
+
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on(
+            "state_changed",
+            (error) => {
+                console.error("Error uploading image:", error);
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+                // Update the user's profile_picture in Firestore
+                const userRef = doc(firestore, "users", username);
+                await updateDoc(userRef, {
+                    profile_picture: downloadURL
+                });
+
+                setImage(downloadURL);
+            }
+        );
+    };
+
+    async function getUserImage(username) {
+        const userRef = doc(firestore, "users", username);
+        const userSnapshot = await getDoc(userRef);
+        if (userSnapshot.exists()) {
+            return userSnapshot.data().profile_picture;
+        }
+        return null;
     }
+
+    function handleClick(event) {
+        event.preventDefault();
+        navigate('/group', { state: { username } });
+    }
+
+    const acceptInvite = async () => {
+        // Update user's group in Firestore
+        const userRef = doc(firestore, "users", username);
+        await updateDoc(userRef, {
+            group: invitation.groupName
+        });
+
+        // Find the group document
+        const groupsRef = collection(firestore, "groups");
+        const groupQuery = query(groupsRef, where("name", "==", invitation.groupName));
+        const groupSnapshot = await getDocs(groupQuery);
+
+        if (!groupSnapshot.empty) {
+            const groupDoc = groupSnapshot.docs[0];
+
+            // Update group's member list in Firestore
+            const groupRef = doc(firestore, "groups", groupDoc.id);
+            await updateDoc(groupRef, {
+                members: arrayUnion(username)
+            });
+            // Delete the invitation document
+            const invitationDoc = doc(firestore, "invitations", invitation.id);
+            await deleteDoc(invitationDoc);
+        } else {
+            console.error("Error: group document not found");
+        }
+        clearInvitation();
+        setHasJoinedGroup(true);
+    };
+
+    const declineInvite = async () => {
+        const invitationsRef = collection(firestore, "invitations");
+        const invitationQuery = query(invitationsRef, where("email", "==", username));
+        const invitationSnapshot = await getDocs(invitationQuery);
+        if (!invitationSnapshot.empty) {
+            const invitationDoc = invitationSnapshot.docs[0];
+            await deleteDoc(doc(invitationsRef, invitationDoc.id));
+        }
+        clearInvitation();
+        setHasDeclinedInvite(true);
+    };
 
     const randomIntFromInterval = (min, max) => {
         return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
-    function getUserImage(username) {
-        const userImages = JSON.parse(localStorage.getItem('userImages') || '{}');
-        return userImages[username];
-    }
+    const randomHike = BucketListGlobal[randomIntFromInterval(0, BucketListGlobal.length - 1)];
 
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
     }
 
-    const totalVal = localStorage.getItem('RecommenderVal');
-
-    const easyHikes = BucketListGlobal.filter(hike => hike.difficulty === 'EASY');
-    const moderateHikes = BucketListGlobal.filter(hike => hike.difficulty === 'MODERATE');
-    const hardHikes = BucketListGlobal.filter(hike => hike.difficulty === 'HARD');
-    const randomHike = BucketListGlobal[randomIntFromInterval(0, BucketListGlobal.length - 1)];
-
-
-
     return (
         <div>
             <div className="image-upload-container">
                 <Typography variant="h4" sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                    Welcome{email ? `, ${email}` : ''}!
+                    Welcome{user ? `, ${user}` : ''}!
                 </Typography>
                 <label htmlFor="image-upload" className="image-upload-label">
                     <input
@@ -87,12 +174,26 @@ const Home = () => {
                     <img src={image} alt="Profile" className="profile-image" />
                 </label>
             </div>
+            {invitation && (
+                <div className="invitation-container">
+                    <Typography variant="h6">
+                        You have been invited to join group {invitation.groupName} by {invitation.from}.
+                    </Typography>
+                    <div className="invitation-buttons">
+                        <Button variant="contained" color="primary" onClick={acceptInvite}>
+                            Accept
+                        </Button>
+                        <Button variant="contained" color="secondary" onClick={declineInvite}>
+                            Decline
+                        </Button>
+                    </div>
+                </div>
+            )}
             <div className="link-container">
-                <a href="/group" className="home-link">Group</a>
+                <a href="/group" className="home-link" onClick={handleClick}>Group</a>
                 <a href="/leaderboard" className="home-link">Leaderboard</a>
                 <a href="/bucketlist" className="home-link">Bucket List</a>
             </div>
-
             <div className="link-container">
                 <Card key="recommendedHike">
                     <CardMedia
@@ -123,70 +224,3 @@ const Home = () => {
 };
 
 export default Home;
-// <Typography variant="h5" sx={{ mt: 3 }} textAlign="center">
-//     Recommended Hikes
-// </Typography>
-//
-// {0 < totalVal <= 4 && easyHikes.map((item, index) => (
-//             <Card key={index}>
-//                 <CardMedia
-//                     component="img"
-//                     height="140"
-//                     image={item.image}
-//                     alt={item.name}
-//                 />
-//                 <CardContent>
-//                     <Typography variant="h5" component="h2">
-//                         {item.name}
-//                     </Typography>
-//                     <Typography color="textSecondary">
-//                         Points: {item.points}
-//                     </Typography>
-//                     <Typography color="textSecondary">
-//                         Distance: {item.length_distance} miles
-//                     </Typography>
-//                 </CardContent>
-//             </Card>
-//         ))}
-// {4 < totalVal <= 9 && moderateHikes.map((item, index) => (
-//             <Card key={index}>
-//                 <CardMedia
-//                     component="img"
-//                     height="140"
-//                     image={item.image}
-//                     alt={item.name}
-//                 />
-//                 <CardContent>
-//                     <Typography variant="h5" component="h2">
-//                         {item.name}
-//                     </Typography>
-//                     <Typography color="textSecondary">
-//                         Points: {item.points}
-//                     </Typography>
-//                     <Typography color="textSecondary">
-//                         Distance: {item.length_distance} miles
-//                     </Typography>
-//                 </CardContent>
-//             </Card>
-//         ))}
-// {9 < totalVal <= 12 && hardHikes.map((item, index) => (
-//             <Card key={index}>
-//                 <CardMedia
-//                     component="img"
-//                     height="140"
-//                     image={item.image}
-//                     alt={item.name}
-//                 />
-//                 <CardContent>
-//                     <Typography variant="h5" component="h2">
-//                         {item.name}
-//                     </Typography>
-//                     <Typography color="textSecondary">
-//                         Points: {item.points}
-//                     </Typography>
-//                     <Typography color="textSecondary">
-//                         Distance: {item.length_distance} miles
-//                     </Typography>
-//                 </CardContent>
-//             </Card>
-//         ))}

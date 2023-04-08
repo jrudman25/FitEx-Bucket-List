@@ -1,39 +1,44 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { db, auth } from './backend/FirebaseConfig';
+import { auth } from './backend/FirebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const Login = () => {
 
-    const [email, setEmail] = useState(sessionStorage.getItem('username') || '');
-    const [password, setPassword] = useState(sessionStorage.getItem('password') || '');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const navigate = useNavigate();
-    const [users, setUsers] = useState(
-        JSON.parse(localStorage.getItem('users')) || []
-    );
 
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
         return <Navigate to="/bucketlist" />;
     }
 
     const handleUsernameChange = event => setEmail(event.target.value);
-
     const handlePasswordChange = event => setPassword(event.target.value);
 
     const handleSubmit = async event => {
         event.preventDefault();
-        await signInWithEmailAndPassword(auth, email, password).then((cred) => {
-            console.log("success");
-            navigate('/bucketlist', { state: { email } });
-            console.log(cred);
-            console.log(auth.currentUser);
+        if(password === '') {
+            alert("Incorrect password.")
+            return;
+        }
+        await signInWithEmailAndPassword(auth, email, password).then(() => {
+            navigate('/bucketlist');
+            sessionStorage.setItem('username', email);
+            sessionStorage.setItem('isLoggedIn', true);
         }).catch((error) => {
-            if (error.code === 'auth/invalid-password') {
-                alert("Invalid password!");
+            if (error.code === 'auth/invalid-email') {
+                alert("Please log in with a valid email");
+            }
+            else if (error.code === 'auth/user-not-found') {
+                alert("User not found");
+            }
+            else if (error.code === 'auth/wrong-password') {
+                alert("Incorrect password");
             }
             else {
-                console.log(error.code);
+                alert("An unexpected error has occurred. Please reload and try again.");
             }
         })
     };
@@ -56,7 +61,7 @@ const Login = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '1rem' }}>
                         <TextField
                             id="username"
-                            label="Username"
+                            label="Email"
                             type="text"
                             value={email}
                             onChange={handleUsernameChange}
