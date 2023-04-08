@@ -44,7 +44,7 @@ const Signup = () => {
             if (error.code === 'auth/email-already-in-use') {
                 alert("This email is already in use. Please sign up with a different email.");
             }
-            else if(error.code === 'auth/weak-password') {
+            else if(error.code === 'auth/weak-password' || password === '') {
                 alert("Please create a password that meets the specifications below.")
             }
             else {

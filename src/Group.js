@@ -89,7 +89,6 @@ const Group = () => {
                 alert(`The group name '${groupName}' is already taken. Please choose a different name.`);
                 return;
             }
-            await addDoc(groupsRef, { name: groupName, members: [username], group_points: 0 });
             await setDoc(doc(groupsRef, groupName), { name: groupName, members: [username], group_points: 0 });
 
             // Update the user's group in Firebase

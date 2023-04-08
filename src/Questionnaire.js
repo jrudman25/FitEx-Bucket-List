@@ -13,8 +13,8 @@ const Questionnaire = () => {
     const [user, setUser] = useState(null);
     const [openAlert, setOpenAlert] = useState(false);
     const [message, setMessage] = useState("");
+    const [surveyCompleted, setSurveyCompleted] = useState(false);
     const navigate = useNavigate();
-    const [hasCompletedSurvey, setHasCompletedSurvey] = useState(false);
     const questions = [
         {
             question: 'How would you rate your fitness level out of 10?',
@@ -66,18 +66,16 @@ const Questionnaire = () => {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     setUser(auth.currentUser);
-                    const userRef = doc(db, 'users', user.email);
-                    const userDoc = await getDoc(userRef);
-                    const userData = userDoc.data();
-                    if (userData && userData.bucketlist) {
-                        setHasCompletedSurvey(true);
-                    }
+                    let userRef = doc(db, 'users', user.email);
+                    const userData = await getDoc(userRef);
+                    setSurveyCompleted(userData.data().surveyCompleted || false);
                 }
             });
         })();
 
         return () => {};
     }, []);
+
 
     const handleAnswerSelection = (event, questionIndex) => {
         const newSelectedAnswers = [...selectedAnswers];
@@ -99,11 +97,11 @@ const Questionnaire = () => {
         console.log(personalBucketlist);
 
         let userRef = doc(db, 'users', user.email);
-        await updateDoc(userRef, {bucketlist : personalBucketlist}).then(() => {
+        await updateDoc(userRef, {bucketlist : personalBucketlist, surveyCompleted: true}).then(() => {
             console.log("created the personal bucketlist and put it in firebase!");
             setMessage("Created a personalized bucketlist just for you!");
             setOpenAlert(true);
-            navigate('/home', {state : user.email});
+            navigate('/home');
         }).catch((error) => {
             console.log("something went wrong...");
         })
@@ -205,7 +203,7 @@ const Questionnaire = () => {
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
     }
-    else if (hasCompletedSurvey) {
+    else if(surveyCompleted) {
         return <Navigate to="/home" />;
     }
 
