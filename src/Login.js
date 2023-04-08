@@ -19,24 +19,25 @@ const Login = () => {
 
     const handleSubmit = async event => {
         event.preventDefault();
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, email, password).then(() => {
             navigate('/bucketlist');
             sessionStorage.setItem('username', email);
             sessionStorage.setItem('isLoggedIn', true);
-        } catch (error) {
+        }).catch((error) => {
             if (error.code === 'auth/invalid-email') {
                 alert("Please log in with a valid email");
-            } else if (error.code === 'auth/user-not-found') {
+            }
+            else if (error.code === 'auth/user-not-found') {
                 alert("User not found");
-            } else if (password === '' || error.code === 'auth/wrong-password') {
+            }
+            else if (password === '' || error.code === 'auth/wrong-password') {
                 alert("Incorrect password");
-            } else {
+            }
+            else {
                 alert("An unexpected error has occurred. Please reload and try again.");
             }
-        }
+        })
     };
-
 
     return (
         <div>
