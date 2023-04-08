@@ -1,15 +1,3 @@
-import sunset from './img/sunset.jfif'
-import pond from './img/pond.jfif'
-import beamer from './img/beamer.jfif'
-import pylons from './img/pylons.jfif'
-import bird from './img/bird.jfif'
-import market from './img/market.jfif'
-import torg from './img/torg.jfif'
-import burruss from './img/burruss.jfif'
-import garden from './img/garden.jfif'
-import caldwell from './img/caldwell.jfif'
-import def from './img/default.jpg'
-
 type ScavengerListItem = {
     name: string,
     objective: string,

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Typography from '@mui/material/Typography';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { Navigate } from 'react-router-dom';
-import { collection, query, where, addDoc, deleteDoc, doc, getDocs, updateDoc, getDoc } from "firebase/firestore";
+import { collection, query, where, addDoc, deleteDoc, doc, getDocs, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { getFirestore } from "firebase/firestore";
 
@@ -90,6 +90,7 @@ const Group = () => {
                 return;
             }
             await addDoc(groupsRef, { name: groupName, members: [username], group_points: 0 });
+            await setDoc(doc(groupsRef, groupName), { name: groupName, members: [username], group_points: 0 });
 
             // Update the user's group in Firebase
             const userRef = doc(firestore, "users", username);

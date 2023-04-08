@@ -40,6 +40,7 @@ const BucketList = () => {
     const [checkScav, setCheckScav] = useState(false);
     const [openAlert, setOpenAlert] = useState(false);
     const [message, setMessage] = useState("");
+    const [isInGroup, setIsInGroup] = useState(false);
 
     //loads the necessary data from firebase into the webpage
     useEffect(() => {
@@ -56,6 +57,7 @@ const BucketList = () => {
                         await getDoc(groupRef).then((groupDoc) => {
                             let groupDocClone = {...groupDoc.data() };
                             setUserGroup(groupDocClone);
+                            setIsInGroup(true);
                             for (let i = 0; i < groupDocClone.members.length; i++) {
                                 if (groupDocClone.members[i] !== auth.currentUser.email) {
                                     setGroupMembers(groupMembers => [...groupMembers, {name: groupDocClone.members[i], bool: false}]);
@@ -521,6 +523,12 @@ const BucketList = () => {
 
     return (
         <React.Fragment>
+            {!isInGroup ? (
+                <Typography align="center" variant="h6">
+                    You must first create or join a group before viewing the bucket list
+                </Typography>
+            ) : (
+                <>
             <BottomNavigation sx={{ width: '100%', maxWidth: '500px', margin: '0 auto' }} value={value} onChange={handleChange}>
                 <BottomNavigationAction
                     label="Hikes"
@@ -570,9 +578,6 @@ const BucketList = () => {
                                     {started === -1 && (
                                         <Button size="small" onClick={() => handleStartDialog(item.name)}>Start</Button>
                                     )}
-                                    {started !== -1 && dialogContent === item.name && (
-                                        <Button size="small" onClick={() => handleComplete(index, "all")}>Complete</Button>
-                                    )}
                                     <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
                                 </CardActions>
                             </Card>
@@ -595,9 +600,6 @@ const BucketList = () => {
                                                 ))}
                                             </ul>
                                         </React.Fragment>
-                                    )}
-                                    {!isCompleted(index) && (
-                                        <Button variant="contained" onClick={() => handleComplete(index, "all")}>Complete</Button>
                                     )}
                                     {isCompleted(index) && (
                                         <p>Completed</p>
@@ -674,9 +676,6 @@ const BucketList = () => {
                                 <DialogContent>
                                     <p>Objective: {item.objective}</p>
                                     <p>Points: {item.points}</p>
-                                    {!isCompleted(item.name) && (
-                                        <Button variant="contained" onClick={() => handleComplete(item.name, "hunt")}>Complete</Button>
-                                    )}
                                     {isCompleted(item.name) && (
                                         <p>Completed</p>
                                     )}
@@ -716,9 +715,6 @@ const BucketList = () => {
                                     {started === -1 && (
                                         <Button size="small" onClick={() => handleStartDialog(item.name)}>Start</Button>
                                     )}
-                                    {started !== -1 && dialogContent === item.name && (
-                                        <Button size="small" onClick={() => handleComplete(index3, "hikes")}>Complete</Button>
-                                    )}
                                     <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
                                 </CardActions>
                             </Card>
@@ -741,9 +737,6 @@ const BucketList = () => {
                                                 ))}
                                             </ul>
                                         </React.Fragment>
-                                    )}
-                                    {!isCompleted(index3) && (
-                                        <Button variant="contained" onClick={() => handleComplete(index3, "hikes")}>Complete</Button>
                                     )}
                                     {isCompleted(index3) && (
                                         <p>Completed</p>
@@ -863,8 +856,9 @@ const BucketList = () => {
             >
                 <Alert severity="success">{message}</Alert>
             </Snackbar>
+            </>
+            )}
         </React.Fragment>
-
     );
 };
 

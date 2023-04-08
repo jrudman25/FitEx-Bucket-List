@@ -19,6 +19,10 @@ const Login = () => {
 
     const handleSubmit = async event => {
         event.preventDefault();
+        if(password === '') {
+            alert("Incorrect password.")
+            return;
+        }
         await signInWithEmailAndPassword(auth, email, password).then(() => {
             navigate('/bucketlist');
             sessionStorage.setItem('username', email);
