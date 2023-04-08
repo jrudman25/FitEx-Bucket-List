@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import BucketListGlobal from "./BucketListGlobal";
 import {onAuthStateChanged} from "firebase/auth";
 import {auth, db} from "./backend/FirebaseConfig";
-import {doc, updateDoc } from "firebase/firestore";
+import {doc, getDoc, updateDoc } from "firebase/firestore";
 import {Alert, Snackbar} from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
 
@@ -14,6 +14,7 @@ const Questionnaire = () => {
     const [openAlert, setOpenAlert] = useState(false);
     const [message, setMessage] = useState("");
     const navigate = useNavigate();
+    const [hasCompletedSurvey, setHasCompletedSurvey] = useState(false);
     const questions = [
         {
             question: 'How would you rate your fitness level out of 10?',
@@ -65,13 +66,18 @@ const Questionnaire = () => {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     setUser(auth.currentUser);
+                    const userRef = doc(db, 'users', user.email);
+                    const userDoc = await getDoc(userRef);
+                    const userData = userDoc.data();
+                    if (userData && userData.bucketlist) {
+                        setHasCompletedSurvey(true);
+                    }
                 }
             });
         })();
 
         return () => {};
     }, []);
-
 
     const handleAnswerSelection = (event, questionIndex) => {
         const newSelectedAnswers = [...selectedAnswers];
@@ -198,6 +204,9 @@ const Questionnaire = () => {
 
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
+    }
+    else if (hasCompletedSurvey) {
+        return <Navigate to="/home" />;
     }
 
     return (
