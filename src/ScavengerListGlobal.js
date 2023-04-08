@@ -21,15 +21,6 @@ type ScavengerListItem = {
 
 const scavengerList: ScavengerListItem[] = [
     {
-        name: "Test",
-        objective: "To test",
-        points: 2,
-        image: "https://firebasestorage.googleapis.com/v0/b/bucketlist-90b4c.appspot.com/o/image.png?alt=media&token=43ddd3db-bd5c-4ca6-ab45-768abc4aa58a",
-        lat: 37.24164121519086,
-        lng: -80.42195130400466,
-        found: false
-    },
-    {
         name: "Sunset Picture",
         objective: "Take a picture of the drillfield at sunset.",
         points: 2,

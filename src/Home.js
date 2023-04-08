@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Typography, Button } from '@mui/material';
+import { Button, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import defaultUser from './img/defaultUser.jpg';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { getFirestore, doc, updateDoc, deleteDoc, arrayUnion } from "firebase/firestore";
 import { collection, query, where, getDocs, getDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import BucketListGlobal from "./BucketListGlobal";
 import './Home.css';
 
 function useUserInvitation(username) {
@@ -146,6 +147,12 @@ const Home = () => {
         setHasDeclinedInvite(true);
     };
 
+    const randomIntFromInterval = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    const randomHike = BucketListGlobal[randomIntFromInterval(0, BucketListGlobal.length - 1)];
+
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
     }
@@ -186,6 +193,31 @@ const Home = () => {
                 <a href="/group" className="home-link" onClick={handleClick}>Group</a>
                 <a href="/leaderboard" className="home-link">Leaderboard</a>
                 <a href="/bucketlist" className="home-link">Bucket List</a>
+            </div>
+            <div className="link-container">
+                <Card key="recommendedHike">
+                    <CardMedia
+                        component="img"
+                        height="140"
+                        width="300"
+                        image={randomHike.image}
+                        alt={randomHike.name}
+                    />
+                    <CardContent>
+                        <Typography variant="h5" component="h2">
+                            {randomHike.name}
+                        </Typography>
+                        <Typography color="textSecondary">
+                            Points: {randomHike.points}
+                        </Typography>
+                        <Typography color="textSecondary">
+                            Distance: {randomHike.length_distance} miles
+                        </Typography>
+                        <Typography color="textSecondary">
+                            Recommended for you!
+                        </Typography>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

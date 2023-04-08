@@ -12,13 +12,13 @@ const Contact = () => {
                 Spring 2023 HCI Capstone Group 5:
             </Typography>
             <Typography variant="h5" sx={{ mb: 1 }} textAlign="center">
-                Karthik Nair (nairks01@vt.edu)
+                Ross Shaffer (rossgshaffer@vt.edu)
             </Typography>
             <Typography variant="h5" sx={{ mb: 1 }} textAlign="center">
                 Jordan Rudman (jrud25@vt.edu)
             </Typography>
             <Typography variant="h5" sx={{ mb: 1 }} textAlign="center">
-                Ross Shaffer (rossgshaffer@vt.edu)
+                Karthik Nair (nairks01@vt.edu)
             </Typography>
             <Typography variant="h5" sx={{ mb: 2 }} textAlign="center">
                 Kevin Yang (keviny@vt.edu)

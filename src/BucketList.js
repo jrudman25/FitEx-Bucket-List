@@ -1,5 +1,7 @@
 import React, {useState, useRef, useEffect} from "react";
-import { Box, FormControl, Button, MenuItem, Select, InputLabel, FormHelperText, Dialog, DialogTitle, DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography, Link, FormGroup, FormLabel, FormControlLabel, Checkbox } from '@mui/material';
+import { Box, FormControl, Button, MenuItem, Select, InputLabel, FormHelperText, Dialog, DialogTitle,
+    DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography, Link, FormGroup,
+    FormLabel, FormControlLabel, Checkbox, Alert, Snackbar } from '@mui/material';
 import { Navigate } from 'react-router-dom';
 import BucketListGlobal from "./BucketListGlobal";
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -36,6 +38,8 @@ const BucketList = () => {
     const [linkedDialog, setLinkedDialog] = useState(false);
     const [linkedDialogIndex, setLinkedDialogIndex] = useState(-1);
     const [checkScav, setCheckScav] = useState(false);
+    const [openAlert, setOpenAlert] = useState(false);
+    const [message, setMessage] = useState("");
 
     //loads the necessary data from firebase into the webpage
     useEffect(() => {
@@ -46,24 +50,24 @@ const BucketList = () => {
 
                     let userRef = doc(db, 'users', auth.currentUser.email);
                     await getDoc(userRef).then(async (userDoc) => {
-                        let userDocClone = {... userDoc.data() };
+                        let userDocClone = {...userDoc.data() };
                         setUserData(userDocClone);
                         let groupRef = doc(db, 'groups', userDoc.data().group);
                         await getDoc(groupRef).then((groupDoc) => {
-                            let groupDocClone = {... groupDoc.data() };
+                            let groupDocClone = {...groupDoc.data() };
                             setUserGroup(groupDocClone);
-                            for (let i = 0; i < groupDoc.data().members.length; i++) {
-                                setGroupMembers(groupMembers => [...groupMembers, {name: groupDocClone.members[i], bool: false}]);
-                                if (i === groupDoc.data().members.length - 1) {
+                            for (let i = 0; i < groupDocClone.members.length; i++) {
+                                if (groupDocClone.members[i] !== auth.currentUser.email) {
+                                    setGroupMembers(groupMembers => [...groupMembers, {name: groupDocClone.members[i], bool: false}]);
+                                }
+                                if (i === groupDocClone.members.length - 1) {
                                     setAcquiredData(true);
                                 }
                             }
                         });
-
-
                     });
 
-                    onSnapshot(userRef, (userDoc) => {
+                    const unsub = onSnapshot(userRef, (userDoc) => {
                         setLinked(userDoc.data().linked);
                     })
                 }
@@ -148,6 +152,7 @@ const BucketList = () => {
     const continueAsLinked = (index) => {
         if (started === -1 && index !== -1) {
             setLinkedDialog(false);
+            setDialogContent(BucketListGlobal[index].name);
             handleStartHike(index, "all");
         }
         else if (index === -1) {
@@ -156,7 +161,6 @@ const BucketList = () => {
         else {
             alert("Please complete your current hike before starting another.");
         }
-
     }
 
     //closes the bucket list item dialog
@@ -164,7 +168,6 @@ const BucketList = () => {
         setOpenDialog(false);
         setDialogContent("");
     };
-
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
@@ -196,7 +199,6 @@ const BucketList = () => {
 
     //performs all the necessary functions when a hike is completed
     const handleComplete = async (index, from) => {
-        console.log(from);
         let hike;
         if (from === "all") {
             hike = BucketListGlobal[index];
@@ -242,6 +244,8 @@ const BucketList = () => {
         let userRef = doc(db, 'users', user.email);
         await updateDoc(userRef, { linked: false }).then(() => {
             console.log("Link has been rejected.");
+            setMessage("You are no longer linked!");
+            setOpenAlert(true);
         });
     }
 
@@ -266,56 +270,97 @@ const BucketList = () => {
 
         let earned_points_raw;
         let userRef = doc(db, 'users', user.email);
+        let groupRef = doc(db, 'groups', userData.group);
 
         if (linked) {
             earned_points_raw = ((distanceTravelled / hike_distance) * hike_points);
             earned_points_raw = earned_points_raw + (earned_points_raw * 0.2);
-            if (hike_difficulty === "EASY" && earned_points_raw > 5) {
+            if (hike_difficulty === "EASY" && earned_points_raw > 6) {
                 await updateDoc(userRef, {user_points: increment(6)}).then(() => {
                     console.log("Successfully awarded user " + String(6) + " points.");
+                    setMessage("You got " + String(6) + " points!");
+                    setOpenAlert(true);
+                });
+                await updateDoc(groupRef, {group_points: increment(6)}).then(() => {
+                    console.log("Successfully awarded group " + String(6) + " points.");
                 });
             }
-            else if (hike_difficulty === "MODERATE" && earned_points_raw > 10) {
+            else if (hike_difficulty === "MODERATE" && earned_points_raw > 12) {
                 await updateDoc(userRef, {user_points: increment(12)}).then(() => {
                     console.log("Successfully awarded user " + String(12) + " points.");
+                    setMessage("You got " + String(12) + " points!");
+                    setOpenAlert(true);
+                });
+                await updateDoc(groupRef, {group_points: increment(12)}).then(() => {
+                    console.log("Successfully awarded group " + String(12) + " points.");
                 });
             }
-            else if (hike_difficulty === "HARD" && earned_points_raw > 15) {
+            else if (hike_difficulty === "HARD" && earned_points_raw > 18) {
                 await updateDoc(userRef, {user_points: increment(18)}).then(() => {
                     console.log("Successfully awarded user " + String(18) + " points.");
+                    setMessage("You got " + String(18) + " points!");
+                    setOpenAlert(true);
+                });
+                await updateDoc(groupRef, {group_points: increment(18)}).then(() => {
+                    console.log("Successfully awarded group " + String(18) + " points.");
                 });
             }
             else {
                 await updateDoc(userRef, {user_points: increment(earned_points_raw)}).then(() => {
-                    console.log("Successfully awarded user " + String(earned_points_raw) + " points.");
+                    console.log("Successfully awarded user " + String(earned_points_raw.toFixed(2)) + " points.");
+                    setMessage("You got " + String(earned_points_raw.toFixed(2)) + " points!");
+                    setOpenAlert(true);
                 });
-             }
+                await updateDoc(groupRef, {group_points: increment(earned_points_raw)}).then(() => {
+                    console.log("Successfully awarded group " + String(earned_points_raw.toFixed(2)) + " points.");
+                });
+            }
         }
         else {
             earned_points_raw = (distanceTravelled / hike_distance) * hike_points;
             if (hike_difficulty === "EASY" && earned_points_raw > 5) {
                 await updateDoc(userRef, {user_points: increment(5)}).then(() => {
                     console.log("Successfully awarded user " + String(5) + " points.");
+                    setMessage("You got " + String(5) + " points!");
+                    setOpenAlert(true);
+                });
+                await updateDoc(groupRef, {group_points: increment(5)}).then(() => {
+                    console.log("Successfully awarded group " + String(5) + " points.");
                 });
             }
             else if (hike_difficulty === "MODERATE" && earned_points_raw > 10) {
                 await updateDoc(userRef, {user_points: increment(10)}).then(() => {
                     console.log("Successfully awarded user " + String(10) + " points.");
+                    setMessage("You got " + String(10) + " points!");
+                    setOpenAlert(true);
+                });
+                await updateDoc(groupRef, {group_points: increment(10)}).then(() => {
+                    console.log("Successfully awarded group " + String(10) + " points.");
                 });
             }
             else if (hike_difficulty === "HARD" && earned_points_raw > 15) {
                 await updateDoc(userRef, {user_points: increment(15)}).then(() => {
                     console.log("Successfully awarded user " + String(15) + " points.");
+                    setMessage("You got " + String(15) + " points!");
+                    setOpenAlert(true);
+                });
+                await updateDoc(groupRef, {group_points: increment(15)}).then(() => {
+                    console.log("Successfully awarded group " + String(15) + " points.");
                 });
             }
             else {
                 await updateDoc(userRef, {user_points: earned_points_raw}).then(() => {
-                    console.log("Successfully awarded user " + String(earned_points_raw) + " points.");
+                    console.log("Successfully awarded user " + String(earned_points_raw.toFixed(2)) + " points.");
+                    setMessage("You got " + String(earned_points_raw.toFixed(2)) + " points!");
+                    setOpenAlert(true);
                 });
+                await updateDoc(groupRef, {group_points: increment(earned_points_raw)}).then(() => {
+                    console.log("Successfully awarded group " + String(earned_points_raw.toFixed(2)) + " points.");
+                });
+
             }
         }
     };
-
 
     //checks if a hike is completed
     const isCompleted = (index) => {
@@ -342,10 +387,9 @@ const BucketList = () => {
                 let lat = position.coords.latitude;
                 let lng = position.coords.longitude;
                 let dis = distance(lat, lng, hike_lat, hike_lng);
-                if (dis <= 0.1) {
-                    alert("The hike has been started, we are tracking your position, you may turn off your phone but do not exit the page.");
+                if (dis <= 0.5) {
+                    alert("The hike has been started, we are tracking your position, do not turn your phone off or close out of the web page.");
                     setStarted(index);
-                    setDialogContent(BucketListGlobal[index].name);
                     let x = navigator.geolocation.watchPosition((position) => {
                         setId(x);
                         setLatPrev(latCurr);
@@ -381,7 +425,6 @@ const BucketList = () => {
         }
     }
 
-
     //starts a hunt for a user
     const handleStartHunt = (index) => {
         let hunt = userData.scavengerlist[index];
@@ -395,7 +438,6 @@ const BucketList = () => {
                 let lat = position.coords.latitude;
                 let lng = position.coords.longitude;
                 let dis = distance(lat, lng, hunt_lat, hunt_lng);
-                console.log(dis);
                 if (dis <= 0.1) {
                     setCheckScav(true);
                 }
@@ -429,7 +471,7 @@ const BucketList = () => {
             const imageRef = ref(storage, `images/${user.email}/${file.name}`);
             await uploadBytes(imageRef, file).then(async () => {
                 await getDownloadURL(imageRef).then(async (url) => {
-                    let temp = {... userData.scavengerlist[index] };
+                    let temp = {...userData.scavengerlist[index] };
                     userData.scavengerlist[index].image = url;
                     userData.scavengerlist[index].found = true;
 
@@ -446,6 +488,8 @@ const BucketList = () => {
                         const userRef = doc(db, 'users', user.email);
                         await updateDoc(userRef, {user_points: increment(2)}).then(() => {
                             console.log("awarded the player 2 points!");
+                            setMessage("You got 2 points!");
+                            setOpenAlert(true);
                             setCheckScav(false);
                             setDialogContent("");
                         })
@@ -457,8 +501,6 @@ const BucketList = () => {
             setCheckScav(false);
         }
     }
-
-
 
     //calculates distance between two coordinates
     const distance = (lat1, lng1, lat2, lng2) => {
@@ -476,7 +518,6 @@ const BucketList = () => {
 
         return c * 3956;
     }
-
 
     return (
         <React.Fragment>
@@ -556,7 +597,7 @@ const BucketList = () => {
                                         </React.Fragment>
                                     )}
                                     {!isCompleted(index) && (
-                                        <Button variant="contained" onClick={() => handleComplete(index)}>Complete</Button>
+                                        <Button variant="contained" onClick={() => handleComplete(index, "all")}>Complete</Button>
                                     )}
                                     {isCompleted(index) && (
                                         <p>Completed</p>
@@ -571,13 +612,13 @@ const BucketList = () => {
                                 <DialogContent>
                                     <FormLabel component="legend">Members:</FormLabel>
                                     <FormGroup>
-                                        {acquiredData && userGroup.members.map((item) => (
+                                        {acquiredData && groupMembers.map((item) => (
                                             <FormControlLabel
                                                 control={
-                                                    <Checkbox onChange={() => handleCheckboxChange(item)} name={item}/>
+                                                    <Checkbox onChange={() => handleCheckboxChange(item.name)} name={item.name}/>
                                                 }
-                                                key={item}
-                                                label={item}
+                                                key={item.name}
+                                                label={item.name}
                                                 sx={{ marginLeft: 2 }}
                                             />
                                         ))}
@@ -634,7 +675,7 @@ const BucketList = () => {
                                     <p>Objective: {item.objective}</p>
                                     <p>Points: {item.points}</p>
                                     {!isCompleted(item.name) && (
-                                        <Button variant="contained" onClick={() => handleComplete(item.name)}>Complete</Button>
+                                        <Button variant="contained" onClick={() => handleComplete(item.name, "hunt")}>Complete</Button>
                                     )}
                                     {isCompleted(item.name) && (
                                         <p>Completed</p>
@@ -702,7 +743,7 @@ const BucketList = () => {
                                         </React.Fragment>
                                     )}
                                     {!isCompleted(index3) && (
-                                        <Button variant="contained" onClick={() => handleComplete(index3)}>Complete</Button>
+                                        <Button variant="contained" onClick={() => handleComplete(index3, "hikes")}>Complete</Button>
                                     )}
                                     {isCompleted(index3) && (
                                         <p>Completed</p>
@@ -717,13 +758,13 @@ const BucketList = () => {
                                 <DialogContent>
                                     <FormLabel component="legend">Members:</FormLabel>
                                     <FormGroup>
-                                        {acquiredData && userGroup.members.map((item) => (
+                                        {acquiredData && groupMembers.map((item) => (
                                             <FormControlLabel
                                                 control={
-                                                    <Checkbox onChange={() => handleCheckboxChange(item)} name={item}/>
+                                                    <Checkbox onChange={() => handleCheckboxChange(item.name)} name={item.name}/>
                                                 }
-                                                key={item}
-                                                label={item}
+                                                key={item.name}
+                                                label={item.name}
                                                 sx={{ marginLeft: 2 }}
                                             />
                                         ))}
@@ -785,7 +826,7 @@ const BucketList = () => {
                                             </ul>
                                         </React.Fragment>
                                     )}
-                                        <p>Completed</p>
+                                    <p>Completed</p>
                                 </DialogContent>
                                 <DialogActions>
                                     <Button onClick={handleClose}>Close</Button>
@@ -815,6 +856,13 @@ const BucketList = () => {
                     <Button size="small" onClick={() => setLinkedDialog(false)}>Cancel</Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={openAlert}
+                autoHideDuration={5000}
+                onClose={() => setOpenAlert(false)}
+            >
+                <Alert severity="success">{message}</Alert>
+            </Snackbar>
         </React.Fragment>
 
     );

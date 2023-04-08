@@ -58,9 +58,21 @@ const Group = () => {
 
     const handleInvite = async () => {
         const invitee = document.getElementById("invitee").value;
+        if (invitee === username) {
+            alert("You're already in this group, invite your friends!");
+            return;
+        }
+        else if (groupMembers.includes(invitee)) {
+            alert("This user is already in the group.");
+            return;
+        }
         const userRef = doc(firestore, "users", invitee);
         const userData = await getDoc(userRef);
         if (userData.exists()) {
+            if (userData.data().group) {
+                alert("This user is already in a group, please have them leave it before inviting.");
+                return;
+            }
             sendInvite(invitee);
             alert("Invite sent!");
             setOpen(false);
