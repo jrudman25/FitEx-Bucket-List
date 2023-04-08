@@ -19,10 +19,6 @@ const Login = () => {
 
     const handleSubmit = async event => {
         event.preventDefault();
-        if(password === '') {
-            alert("Incorrect password.")
-            return;
-        }
         await signInWithEmailAndPassword(auth, email, password).then(() => {
             navigate('/bucketlist');
             sessionStorage.setItem('username', email);
@@ -34,7 +30,7 @@ const Login = () => {
             else if (error.code === 'auth/user-not-found') {
                 alert("User not found");
             }
-            else if (error.code === 'auth/wrong-password') {
+            else if (password === '' || error.code === 'auth/wrong-password') {
                 alert("Incorrect password");
             }
             else {
