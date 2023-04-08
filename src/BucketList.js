@@ -154,7 +154,6 @@ const BucketList = () => {
     const continueAsLinked = (index) => {
         if (started === -1 && index !== -1) {
             setLinkedDialog(false);
-            setDialogContent(BucketListGlobal[index].name);
             handleStartHike(index, "all");
         }
         else if (index === -1) {
@@ -383,15 +382,16 @@ const BucketList = () => {
         let dis_travelled = 0;
 
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((position) => {
+            navigator.geolocation.getCurrentPosition(async (position) => {
                 setLatCurr(position.coords.latitude);
                 setLngCurr(position.coords.longitude);
                 let lat = position.coords.latitude;
                 let lng = position.coords.longitude;
                 let dis = distance(lat, lng, hike_lat, hike_lng);
-                if (dis <= 0.5) {
+                if (dis <= 0.1) {
                     alert("The hike has been started, we are tracking your position, do not turn your phone off or close out of the web page.");
                     setStarted(index);
+                    setDialogContent(hike.name);
                     let x = navigator.geolocation.watchPosition((position) => {
                         setId(x);
                         setLatPrev(latCurr);
@@ -415,6 +415,17 @@ const BucketList = () => {
                 }
                 else {
                     alert("Please get closer to the beginning of the hike!");
+
+                    if (linked) {
+                        let userRef = doc(db, 'users', user.email);
+                        await updateDoc(userRef, { linked: false }).then(() => {
+                            console.log("Changed linked back to false");
+                        });
+                    }
+
+                    for (let i = 0; i < groupMembers.length; i++) {
+                        groupMembers[i].bool = false;
+                    }
                 }
             }, () => {
                 alert("Couldn't get your coordinates");
@@ -430,7 +441,6 @@ const BucketList = () => {
     //starts a hunt for a user
     const handleStartHunt = (index) => {
         let hunt = userData.scavengerlist[index];
-        setDialogContent(hunt.name);
         let hunt_lat = hunt.lat;
         let hunt_lng = hunt.lng;
         if (navigator.geolocation) {
@@ -441,6 +451,7 @@ const BucketList = () => {
                 let lng = position.coords.longitude;
                 let dis = distance(lat, lng, hunt_lat, hunt_lng);
                 if (dis <= 0.1) {
+                    setDialogContent(hunt.name);
                     setCheckScav(true);
                 }
                 else {
@@ -578,6 +589,9 @@ const BucketList = () => {
                                     {started === -1 && (
                                         <Button size="small" onClick={() => handleStartDialog(item.name)}>Start</Button>
                                     )}
+                                    {started !== -1 && dialogContent === item.name && (
+                                        <Button size="small" onClick={() => handleComplete(index, "all")}>Complete</Button>
+                                    )}
                                     <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
                                 </CardActions>
                             </Card>
@@ -714,6 +728,9 @@ const BucketList = () => {
                                 <CardActions>
                                     {started === -1 && (
                                         <Button size="small" onClick={() => handleStartDialog(item.name)}>Start</Button>
+                                    )}
+                                    {started !== -1 && dialogContent === item.name && (
+                                        <Button size="small" onClick={() => handleComplete(index3, "hikes")}>Complete</Button>
                                     )}
                                     <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
                                 </CardActions>
