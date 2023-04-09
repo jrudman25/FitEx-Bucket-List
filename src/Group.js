@@ -9,6 +9,7 @@ import { getFirestore } from "firebase/firestore";
 const Group = () => {
 
     const firestore = getFirestore();
+    const [loading, setLoading] = useState(true);
     const groupsRef = collection(firestore, "groups");
     const [groupMembers, setGroupMembers] = useState([]);
     const username = sessionStorage.getItem("username");
@@ -22,9 +23,13 @@ const Group = () => {
             if (userData.exists()) {
                 setGroup(userData.data().group);
             }
+            // Set loading to false once data is fetched
+            setLoading(false);
         };
         if (username) {
             fetchGroup();
+        } else {
+            setLoading(false);
         }
     }, [username, firestore]);
 
@@ -136,6 +141,14 @@ const Group = () => {
 
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
+    }
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <Typography variant="h4">Loading...</Typography>
+            </Box>
+        );
     }
 
     return (

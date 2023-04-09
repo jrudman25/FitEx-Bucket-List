@@ -41,6 +41,7 @@ const BucketList = () => {
     const [openAlert, setOpenAlert] = useState(false);
     const [message, setMessage] = useState("");
     const [isInGroup, setIsInGroup] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     //loads the necessary data from firebase into the webpage
     useEffect(() => {
@@ -64,6 +65,7 @@ const BucketList = () => {
                                 }
                                 if (i === groupDocClone.members.length - 1) {
                                     setAcquiredData(true);
+                                    setLoading(false);
                                 }
                             }
                         });
@@ -89,9 +91,16 @@ const BucketList = () => {
         }
     }, [linked])
 
-
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
+    }
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <Typography variant="h4">Loading...</Typography>
+            </Box>
+        );
     }
 
     //opens the dialog for the necessary bucket list item
@@ -542,17 +551,17 @@ const BucketList = () => {
                 <>
             <BottomNavigation sx={{ width: '100%', maxWidth: '500px', margin: '0 auto' }} value={value} onChange={handleChange}>
                 <BottomNavigationAction
-                    label="Hikes"
+                    label="Your Hikes"
                     value="hikes"
                     icon={<HikingRoundedIcon />}
                 />
                 <BottomNavigationAction
-                    label="Hunt"
+                    label="Hunts"
                     value="hunt"
                     icon={<CameraEnhanceRoundedIcon />}
                 />
                 <BottomNavigationAction
-                    label="All"
+                    label="All Hikes"
                     value="all"
                     icon={<FormatListBulletedRoundedIcon />}
                 />
@@ -562,291 +571,292 @@ const BucketList = () => {
                     icon={<DoneAllRoundedIcon />}
                 />
             </BottomNavigation>
-
-            {value === 'all' && (
-                <Box>
-                    {BucketListGlobal.map((item, index) => (
-                        <React.Fragment key={item.name + "_all"}>
-                            <Card sx={{ maxWidth: 499 }} >
-                                <CardMedia
-                                    sx={{ height: 140 }}
-                                    component="img"
-                                    image={item.image}
-                                    alt="hike"
-                                />
-                                <CardContent>
-                                    <Typography gutterBottom variant="h5" component="div">
-                                        {item.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {item.difficulty}, {item.length_distance}mi, {item.length_time}min, {item.elevation_gain}ft
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {item.points} Points
-                                    </Typography>
-                                </CardContent>
-                                <CardActions>
-                                    {started === -1 && (
-                                        <Button size="small" onClick={() => handleStartDialog(item.name)}>Start</Button>
-                                    )}
-                                    {started !== -1 && dialogContent === item.name && (
-                                        <Button size="small" onClick={() => handleComplete(index, "all")}>Complete</Button>
-                                    )}
-                                    <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
-                                </CardActions>
-                            </Card>
-                            <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
-                                <DialogTitle>{item.name}</DialogTitle>
-                                <DialogContent>
-                                    <Link href={item.link} target="_blank">Directions</Link>
-                                    <p>Difficulty: {item.difficulty}</p>
-                                    <p>Points: {item.points}</p>
-                                    <p>Length (distance): {item.length_distance} miles</p>
-                                    <p>Length (time): {item.length_time} minutes</p>
-                                    <p>Elevation gain: {item.elevation_gain} feet</p>
-                                    <p>Distance from campus: {item.distance_from_campus} miles</p>
-                                    {item.bonus_quests.length > 0 && (
-                                        <React.Fragment>
-                                            <p>Bonus quests:</p>
-                                            <ul>
-                                                {item.bonus_quests.map((quest, index) => (
-                                                    <li key={String(index) + "_all"}>{quest}</li>
-                                                ))}
-                                            </ul>
-                                        </React.Fragment>
-                                    )}
-                                    {isCompleted(index) && (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100vh' }}>
+                {value === 'all' && (
+                    <Box>
+                        {BucketListGlobal.map((item, index) => (
+                            <React.Fragment key={item.name + "_all"}>
+                                <Card sx={{ maxWidth: 499 }} >
+                                    <CardMedia
+                                        sx={{ height: 140 }}
+                                        component="img"
+                                        image={item.image}
+                                        alt="hike"
+                                    />
+                                    <CardContent>
+                                        <Typography gutterBottom variant="h5" component="div">
+                                            {item.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {item.difficulty}, {item.length_distance}mi, {item.length_time}min, {item.elevation_gain}ft
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {item.points} Points
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        {started === -1 && (
+                                            <Button size="small" onClick={() => handleStartDialog(item.name)}>Start</Button>
+                                        )}
+                                        {started !== -1 && dialogContent === item.name && (
+                                            <Button size="small" onClick={() => handleComplete(index, "all")}>Complete</Button>
+                                        )}
+                                        <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
+                                    </CardActions>
+                                </Card>
+                                <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
+                                    <DialogTitle>{item.name}</DialogTitle>
+                                    <DialogContent>
+                                        <Link href={item.link} target="_blank">Directions</Link>
+                                        <p>Difficulty: {item.difficulty}</p>
+                                        <p>Points: {item.points}</p>
+                                        <p>Length (distance): {item.length_distance} miles</p>
+                                        <p>Length (time): {item.length_time} minutes</p>
+                                        <p>Elevation gain: {item.elevation_gain} feet</p>
+                                        <p>Distance from campus: {item.distance_from_campus} miles</p>
+                                        {item.bonus_quests.length > 0 && (
+                                            <React.Fragment>
+                                                <p>Bonus quests:</p>
+                                                <ul>
+                                                    {item.bonus_quests.map((quest, index) => (
+                                                        <li key={String(index) + "_all"}>{quest}</li>
+                                                    ))}
+                                                </ul>
+                                            </React.Fragment>
+                                        )}
+                                        {isCompleted(index) && (
+                                            <p>Completed</p>
+                                        )}
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button onClick={handleClose}>Close</Button>
+                                    </DialogActions>
+                                </Dialog>
+                                <Dialog open={openGroupDialog && dialogContent === item.name}>
+                                    <DialogTitle>Add Group Members for Extra Points?</DialogTitle>
+                                    <DialogContent>
+                                        <FormLabel component="legend">Members:</FormLabel>
+                                        <FormGroup>
+                                            {acquiredData && groupMembers.map((item) => (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox onChange={() => handleCheckboxChange(item.name)} name={item.name}/>
+                                                    }
+                                                    key={item.name}
+                                                    label={item.name}
+                                                    sx={{ marginLeft: 2 }}
+                                                />
+                                            ))}
+                                        </FormGroup>
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button size="small" onClick={() => checkGroupMembersLocation(index, "all")}>Continue</Button>
+                                        <Button size="small" onClick={() => cancelGroupDialog()}>Cancel</Button>
+                                    </DialogActions>
+                                </Dialog>
+                                <p></p>
+                            </React.Fragment>
+                        ))}
+                    </Box>
+                )}
+                {value === 'hunt' && (
+                    <Box>
+                        {acquiredData && userData.scavengerlist.map((item, index2) => (
+                            <React.Fragment key={item.name + "_hunt"}>
+                                <Card sx={{ maxWidth: 499 }} >
+                                    <CardMedia
+                                        sx={{ height: 140 }}
+                                        component="img"
+                                        alt="scavenger hunt"
+                                        image={item.image}
+                                    />
+                                    <CardContent>
+                                        <Typography gutterBottom variant="h5" component="div">
+                                            {item.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {item.points} Points
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        {!item.found && !checkScav && (
+                                            <Button size="small" onClick={() => handleStartHunt(index2)}>Start</Button>
+                                        )}
+                                        {checkScav && dialogContent === item.name && (
+                                            <div>
+                                                <Button size="small" component="label">
+                                                    Upload Picture
+                                                    <input hidden id="myFile" type="file" accept="image/*" name="myFile" onChange={(e) => handleImageUpload(index2, e)}/>
+                                                </Button>
+                                                <Button size="small" onClick={cancelImageUpload}>Cancel</Button>
+                                            </div>
+                                        )}
+                                        <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
+                                    </CardActions>
+                                </Card>
+                                <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
+                                    <DialogTitle>{item.name}</DialogTitle>
+                                    <DialogContent>
+                                        <p>Objective: {item.objective}</p>
+                                        <p>Points: {item.points}</p>
+                                        {isCompleted(item.name) && (
+                                            <p>Completed</p>
+                                        )}
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button onClick={handleClose}>Close</Button>
+                                    </DialogActions>
+                                </Dialog>
+                                <p></p>
+                            </React.Fragment>
+                        ))}
+                    </Box>
+                )}
+                {value === 'hikes' && (
+                    <Box>
+                        {acquiredData && userData.bucketlist.map((item, index3) => (
+                            <React.Fragment key={item.name + "_hikes"}>
+                                <Card sx={{ maxWidth: 499 }} >
+                                    <CardMedia
+                                        sx={{ height: 140 }}
+                                        component="img"
+                                        image={item.image}
+                                        alt="hike"
+                                    />
+                                    <CardContent>
+                                        <Typography gutterBottom variant="h5" component="div">
+                                            {item.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {item.difficulty}, {item.length_distance}mi, {item.length_time}min, {item.elevation_gain}ft
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {item.points} Points
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        {started === -1 && (
+                                            <Button size="small" onClick={() => handleStartDialog(item.name)}>Start</Button>
+                                        )}
+                                        {started !== -1 && dialogContent === item.name && (
+                                            <Button size="small" onClick={() => handleComplete(index3, "hikes")}>Complete</Button>
+                                        )}
+                                        <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
+                                    </CardActions>
+                                </Card>
+                                <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
+                                    <DialogTitle>{item.name}</DialogTitle>
+                                    <DialogContent>
+                                        <Link href={item.link} target="_blank">Directions</Link>
+                                        <p>Difficulty: {item.difficulty}</p>
+                                        <p>Points: {item.points}</p>
+                                        <p>Length (distance): {item.length_distance} miles</p>
+                                        <p>Length (time): {item.length_time} minutes</p>
+                                        <p>Elevation gain: {item.elevation_gain} feet</p>
+                                        <p>Distance from campus: {item.distance_from_campus} miles</p>
+                                        {item.bonus_quests.length > 0 && (
+                                            <React.Fragment>
+                                                <p>Bonus quests:</p>
+                                                <ul>
+                                                    {item.bonus_quests.map((quest, index) => (
+                                                        <li key={String(index) + "_hikes"}>{quest}</li>
+                                                    ))}
+                                                </ul>
+                                            </React.Fragment>
+                                        )}
+                                        {isCompleted(index3) && (
+                                            <p>Completed</p>
+                                        )}
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button onClick={handleClose}>Close</Button>
+                                    </DialogActions>
+                                </Dialog>
+                                <Dialog open={openGroupDialog && dialogContent === item.name}>
+                                    <DialogTitle>Add Group Members for Extra Points?</DialogTitle>
+                                    <DialogContent>
+                                        <FormLabel component="legend">Members:</FormLabel>
+                                        <FormGroup>
+                                            {acquiredData && groupMembers.map((item) => (
+                                                <FormControlLabel
+                                                    control={
+                                                        <Checkbox onChange={() => handleCheckboxChange(item.name)} name={item.name}/>
+                                                    }
+                                                    key={item.name}
+                                                    label={item.name}
+                                                    sx={{ marginLeft: 2 }}
+                                                />
+                                            ))}
+                                        </FormGroup>
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button size="small" onClick={() => checkGroupMembersLocation(index3, "hikes")}>Continue</Button>
+                                        <Button size="small" onClick={() => cancelGroupDialog()}>Cancel</Button>
+                                    </DialogActions>
+                                </Dialog>
+                                <p></p>
+                            </React.Fragment>
+                        ))}
+                    </Box>
+                )}
+                {value === 'completed' && (
+                    <Box>
+                        {acquiredData && userData.completed.map((item, index4) => (
+                            <React.Fragment key={item.name + "_completed"}>
+                                <Card sx={{ maxWidth: 499 }} >
+                                    <CardMedia
+                                        sx={{ height: 140 }}
+                                        component="img"
+                                        image={item.image}
+                                        alt="hike"
+                                    />
+                                    <CardContent>
+                                        <Typography gutterBottom variant="h5" component="div">
+                                            {item.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {item.difficulty}, {item.length_distance}mi, {item.length_time}min, {item.elevation_gain}ft
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            {item.points} Points
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
+                                    </CardActions>
+                                </Card>
+                                <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
+                                    <DialogTitle>{item.name}</DialogTitle>
+                                    <DialogContent>
+                                        <Link href={item.link} target="_blank">Directions</Link>
+                                        <p>Difficulty: {item.difficulty}</p>
+                                        <p>Points: {item.points}</p>
+                                        <p>Length (distance): {item.length_distance} miles</p>
+                                        <p>Length (time): {item.length_time} minutes</p>
+                                        <p>Elevation gain: {item.elevation_gain} feet</p>
+                                        <p>Distance from campus: {item.distance_from_campus} miles</p>
+                                        {item.bonus_quests.length > 0 && (
+                                            <React.Fragment>
+                                                <p>Bonus quests:</p>
+                                                <ul>
+                                                    {item.bonus_quests.map((quest, index) => (
+                                                        <li key={String(index) + "_completed"}>{quest}</li>
+                                                    ))}
+                                                </ul>
+                                            </React.Fragment>
+                                        )}
                                         <p>Completed</p>
-                                    )}
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button onClick={handleClose}>Close</Button>
-                                </DialogActions>
-                            </Dialog>
-                            <Dialog open={openGroupDialog && dialogContent === item.name}>
-                                <DialogTitle>Add Group Members for Extra Points?</DialogTitle>
-                                <DialogContent>
-                                    <FormLabel component="legend">Members:</FormLabel>
-                                    <FormGroup>
-                                        {acquiredData && groupMembers.map((item) => (
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox onChange={() => handleCheckboxChange(item.name)} name={item.name}/>
-                                                }
-                                                key={item.name}
-                                                label={item.name}
-                                                sx={{ marginLeft: 2 }}
-                                            />
-                                        ))}
-                                    </FormGroup>
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button size="small" onClick={() => checkGroupMembersLocation(index, "all")}>Continue</Button>
-                                    <Button size="small" onClick={() => cancelGroupDialog()}>Cancel</Button>
-                                </DialogActions>
-                            </Dialog>
-                            <p></p>
-                        </React.Fragment>
-                    ))}
-                </Box>
-            )}
-            {value === 'hunt' && (
-                <Box>
-                    {acquiredData && userData.scavengerlist.map((item, index2) => (
-                        <React.Fragment key={item.name + "_hunt"}>
-                            <Card sx={{ maxWidth: 499 }} >
-                                <CardMedia
-                                    sx={{ height: 140 }}
-                                    component="img"
-                                    alt="scavenger hunt"
-                                    image={item.image}
-                                />
-                                <CardContent>
-                                    <Typography gutterBottom variant="h5" component="div">
-                                        {item.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {item.points} Points
-                                    </Typography>
-                                </CardContent>
-                                <CardActions>
-                                    {!item.found && !checkScav && (
-                                        <Button size="small" onClick={() => handleStartHunt(index2)}>Start</Button>
-                                    )}
-                                    {checkScav && dialogContent === item.name && (
-                                        <div>
-                                            <Button size="small" component="label">
-                                                Upload Picture
-                                                <input hidden id="myFile" type="file" accept="image/*" name="myFile" onChange={(e) => handleImageUpload(index2, e)}/>
-                                            </Button>
-                                            <Button size="small" onClick={cancelImageUpload}>Cancel</Button>
-                                        </div>
-                                    )}
-                                    <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
-                                </CardActions>
-                            </Card>
-                            <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
-                                <DialogTitle>{item.name}</DialogTitle>
-                                <DialogContent>
-                                    <p>Objective: {item.objective}</p>
-                                    <p>Points: {item.points}</p>
-                                    {isCompleted(item.name) && (
-                                        <p>Completed</p>
-                                    )}
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button onClick={handleClose}>Close</Button>
-                                </DialogActions>
-                            </Dialog>
-                            <p></p>
-                        </React.Fragment>
-                    ))}
-                </Box>
-            )}
-            {value === 'hikes' && (
-                <Box>
-                    {acquiredData && userData.bucketlist.map((item, index3) => (
-                        <React.Fragment key={item.name + "_hikes"}>
-                            <Card sx={{ maxWidth: 499 }} >
-                                <CardMedia
-                                    sx={{ height: 140 }}
-                                    component="img"
-                                    image={item.image}
-                                    alt="hike"
-                                />
-                                <CardContent>
-                                    <Typography gutterBottom variant="h5" component="div">
-                                        {item.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {item.difficulty}, {item.length_distance}mi, {item.length_time}min, {item.elevation_gain}ft
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {item.points} Points
-                                    </Typography>
-                                </CardContent>
-                                <CardActions>
-                                    {started === -1 && (
-                                        <Button size="small" onClick={() => handleStartDialog(item.name)}>Start</Button>
-                                    )}
-                                    {started !== -1 && dialogContent === item.name && (
-                                        <Button size="small" onClick={() => handleComplete(index3, "hikes")}>Complete</Button>
-                                    )}
-                                    <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
-                                </CardActions>
-                            </Card>
-                            <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
-                                <DialogTitle>{item.name}</DialogTitle>
-                                <DialogContent>
-                                    <Link href={item.link} target="_blank">Directions</Link>
-                                    <p>Difficulty: {item.difficulty}</p>
-                                    <p>Points: {item.points}</p>
-                                    <p>Length (distance): {item.length_distance} miles</p>
-                                    <p>Length (time): {item.length_time} minutes</p>
-                                    <p>Elevation gain: {item.elevation_gain} feet</p>
-                                    <p>Distance from campus: {item.distance_from_campus} miles</p>
-                                    {item.bonus_quests.length > 0 && (
-                                        <React.Fragment>
-                                            <p>Bonus quests:</p>
-                                            <ul>
-                                                {item.bonus_quests.map((quest, index) => (
-                                                    <li key={String(index) + "_hikes"}>{quest}</li>
-                                                ))}
-                                            </ul>
-                                        </React.Fragment>
-                                    )}
-                                    {isCompleted(index3) && (
-                                        <p>Completed</p>
-                                    )}
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button onClick={handleClose}>Close</Button>
-                                </DialogActions>
-                            </Dialog>
-                            <Dialog open={openGroupDialog && dialogContent === item.name}>
-                                <DialogTitle>Add Group Members for Extra Points?</DialogTitle>
-                                <DialogContent>
-                                    <FormLabel component="legend">Members:</FormLabel>
-                                    <FormGroup>
-                                        {acquiredData && groupMembers.map((item) => (
-                                            <FormControlLabel
-                                                control={
-                                                    <Checkbox onChange={() => handleCheckboxChange(item.name)} name={item.name}/>
-                                                }
-                                                key={item.name}
-                                                label={item.name}
-                                                sx={{ marginLeft: 2 }}
-                                            />
-                                        ))}
-                                    </FormGroup>
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button size="small" onClick={() => checkGroupMembersLocation(index3, "hikes")}>Continue</Button>
-                                    <Button size="small" onClick={() => cancelGroupDialog()}>Cancel</Button>
-                                </DialogActions>
-                            </Dialog>
-                            <p></p>
-                        </React.Fragment>
-                    ))}
-                </Box>
-            )}
-            {value === 'completed' && (
-                <Box>
-                    {acquiredData && userData.completed.map((item, index4) => (
-                        <React.Fragment key={item.name + "_completed"}>
-                            <Card sx={{ maxWidth: 499 }} >
-                                <CardMedia
-                                    sx={{ height: 140 }}
-                                    component="img"
-                                    image={item.image}
-                                    alt="hike"
-                                />
-                                <CardContent>
-                                    <Typography gutterBottom variant="h5" component="div">
-                                        {item.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {item.difficulty}, {item.length_distance}mi, {item.length_time}min, {item.elevation_gain}ft
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {item.points} Points
-                                    </Typography>
-                                </CardContent>
-                                <CardActions>
-                                    <Button size="small" onClick={() => handleClick(item.name)}>Learn More</Button>
-                                </CardActions>
-                            </Card>
-                            <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
-                                <DialogTitle>{item.name}</DialogTitle>
-                                <DialogContent>
-                                    <Link href={item.link} target="_blank">Directions</Link>
-                                    <p>Difficulty: {item.difficulty}</p>
-                                    <p>Points: {item.points}</p>
-                                    <p>Length (distance): {item.length_distance} miles</p>
-                                    <p>Length (time): {item.length_time} minutes</p>
-                                    <p>Elevation gain: {item.elevation_gain} feet</p>
-                                    <p>Distance from campus: {item.distance_from_campus} miles</p>
-                                    {item.bonus_quests.length > 0 && (
-                                        <React.Fragment>
-                                            <p>Bonus quests:</p>
-                                            <ul>
-                                                {item.bonus_quests.map((quest, index) => (
-                                                    <li key={String(index) + "_completed"}>{quest}</li>
-                                                ))}
-                                            </ul>
-                                        </React.Fragment>
-                                    )}
-                                    <p>Completed</p>
-                                </DialogContent>
-                                <DialogActions>
-                                    <Button onClick={handleClose}>Close</Button>
-                                </DialogActions>
-                            </Dialog>
-                            <p></p>
-                        </React.Fragment>
-                    ))}
-                </Box>
-            )}
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button onClick={handleClose}>Close</Button>
+                                    </DialogActions>
+                                </Dialog>
+                                <p></p>
+                            </React.Fragment>
+                        ))}
+                    </Box>
+                )}
+            </Box>
             <Dialog open={linkedDialog}>
                 <DialogTitle>You have been linked to be in a hike!</DialogTitle>
                 <DialogContent>

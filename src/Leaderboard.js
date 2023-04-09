@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import './Leaderboard.css';
+import { Box, Typography } from '@mui/material';
 import { db } from './backend/FirebaseConfig';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import './Leaderboard.css';
 
 function Leaderboard() {
+
     const [groups, setGroups] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchGroups = async () => {
@@ -14,6 +17,7 @@ function Leaderboard() {
             const querySnapshot = await getDocs(q);
             const fetchedGroups = querySnapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
             setGroups(fetchedGroups);
+            setLoading(false);
         };
 
         fetchGroups();
@@ -21,6 +25,14 @@ function Leaderboard() {
 
     if (!(sessionStorage.getItem('isLoggedIn') === 'true')) {
         return <Navigate to="/" />;
+    }
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <Typography variant="h4">Loading...</Typography>
+            </Box>
+        );
     }
 
     return (

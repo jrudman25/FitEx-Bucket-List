@@ -14,7 +14,7 @@ const NavBar = () => {
             <Nav style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center' }}>
                     <div id={"imageContainer"} style={{ height: '50px', marginRight: '10px' }}>
-                        <img src={bucketListIcon} style={{ width: '100%', height: '100%' }} alt="clipboard logo"/>
+                        <img src={bucketListIcon} className="bucket-list-icon" style={{ width: 'auto%', height: '100%' }} alt="clipboard logo"/>
                     </div>
                     {isLoggedIn ? (
                         <a href="/home" style={{ textDecoration: 'none' }}>

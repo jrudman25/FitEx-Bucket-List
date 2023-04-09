@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Button, Card, CardContent, CardMedia, Typography } from '@mui/material';
+import { Button, Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
 import defaultUser from './img/defaultUser.jpg';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { getFirestore, doc, updateDoc, deleteDoc, arrayUnion } from "firebase/firestore";
 import { collection, query, where, getDocs, getDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -39,11 +39,13 @@ const Home = () => {
 
     const username = sessionStorage.getItem('username');
     const user = username.substring(0, username.lastIndexOf('@'));
+    const [loading, setLoading] = useState(true);
     const [image, setImage] = useState(getUserImage(username) || defaultUser);
     useEffect(() => {
         const fetchUserImage = async () => {
             const imageUrl = await getUserImage(username);
             setImage(imageUrl || defaultUser);
+            setLoading(false);
         };
         fetchUserImage();
     }, [username]);
@@ -74,6 +76,7 @@ const Home = () => {
 
         uploadTask.on(
             "state_changed",
+            null, // Removed the error handler from state_changed
             (error) => {
                 console.error("Error uploading image:", error);
             },
@@ -157,6 +160,14 @@ const Home = () => {
         return <Navigate to="/" />;
     }
 
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <Typography variant="h4">Loading...</Typography>
+            </Box>
+        );
+    }
+
     return (
         <div>
             <div className="image-upload-container">
@@ -195,29 +206,31 @@ const Home = () => {
                 <a href="/bucketlist" className="home-link">Bucket List</a>
             </div>
             <div className="link-container">
-                <Card key="recommendedHike">
-                    <CardMedia
-                        component="img"
-                        height="140"
-                        width="300"
-                        image={randomHike.image}
-                        alt={randomHike.name}
-                    />
-                    <CardContent>
-                        <Typography variant="h5" component="h2">
-                            {randomHike.name}
-                        </Typography>
-                        <Typography color="textSecondary">
-                            Points: {randomHike.points}
-                        </Typography>
-                        <Typography color="textSecondary">
-                            Distance: {randomHike.length_distance} miles
-                        </Typography>
-                        <Typography color="textSecondary">
-                            Recommended for you!
-                        </Typography>
-                    </CardContent>
-                </Card>
+                <Link to="/bucketlist" style={{ textDecoration: 'none' }}>
+                    <Card key="recommendedHike">
+                        <CardMedia
+                            component="img"
+                            height="140"
+                            width="300"
+                            image={randomHike.image}
+                            alt={randomHike.name}
+                        />
+                        <CardContent>
+                            <Typography variant="h5" component="h2">
+                                {randomHike.name}
+                            </Typography>
+                            <Typography color="textSecondary">
+                                Points: {randomHike.points}
+                            </Typography>
+                            <Typography color="textSecondary">
+                                Distance: {randomHike.length_distance} miles
+                            </Typography>
+                            <Typography color="textSecondary">
+                                Recommended for you!
+                            </Typography>
+                        </CardContent>
+                    </Card>
+                </Link>
             </div>
         </div>
     );

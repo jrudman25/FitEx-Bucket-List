@@ -1,7 +1,5 @@
-img {
-    display: flex;
-    height: 10vh;
-    width: 10vw;
-    align-items: center;
-    justify-content: center;
+@media (max-width: 767px) {
+    .bucket-list-icon {
+        height: 10vh;
+    }
 }
