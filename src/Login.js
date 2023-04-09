@@ -20,7 +20,7 @@ const Login = () => {
     const handleSubmit = async event => {
         event.preventDefault();
         await signInWithEmailAndPassword(auth, email, password).then(() => {
-            navigate('/bucketlist');
+            navigate('/home');
             sessionStorage.setItem('username', email);
             sessionStorage.setItem('isLoggedIn', true);
         }).catch((error) => {
