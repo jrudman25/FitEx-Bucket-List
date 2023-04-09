@@ -207,7 +207,7 @@ const Home = () => {
             </div>
             <div className="link-container">
                 <Link to="/bucketlist" style={{ textDecoration: 'none' }}>
-                    <Card key="recommendedHike" sx={{ width: 450, maxWidth: 499}}>
+                    <Card key="recommendedHike" sx={{ width: 400, maxWidth: 499}}>
                         <CardMedia
                             component="img"
                             height="140"

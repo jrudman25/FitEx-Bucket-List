@@ -576,7 +576,7 @@ const BucketList = () => {
                     <Box>
                         {BucketListGlobal.map((item, index) => (
                             <React.Fragment key={item.name + "_all"}>
-                                <Card sx={{ width: 450, maxWidth: 499 }} >
+                                <Card sx={{ width: 400, maxWidth: 499 }} >
                                     <CardMedia
                                         sx={{ height: 140 }}
                                         component="img"
@@ -663,7 +663,7 @@ const BucketList = () => {
                     <Box>
                         {acquiredData && userData.scavengerlist.map((item, index2) => (
                             <React.Fragment key={item.name + "_hunt"}>
-                                <Card sx={{ width: 450, maxWidth: 499 }} >
+                                <Card sx={{ width: 400, maxWidth: 499 }} >
                                     <CardMedia
                                         sx={{ height: 140 }}
                                         component="img"
@@ -716,7 +716,7 @@ const BucketList = () => {
                     <Box>
                         {acquiredData && userData.bucketlist.map((item, index3) => (
                             <React.Fragment key={item.name + "_hikes"}>
-                                <Card sx={{ width: 450, maxWidth: 499 }} >
+                                <Card sx={{ width: 400, maxWidth: 499 }} >
                                     <CardMedia
                                         sx={{ height: 140 }}
                                         component="img"
@@ -803,7 +803,7 @@ const BucketList = () => {
                     <Box>
                         {acquiredData && userData.completed.map((item, index4) => (
                             <React.Fragment key={item.name + "_completed"}>
-                                <Card sx={{ width: 450, maxWidth: 499 }} >
+                                <Card sx={{ width: 400, maxWidth: 499 }} >
                                     <CardMedia
                                         sx={{ height: 140 }}
                                         component="img"
