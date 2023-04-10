@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Button, Box, Card, CardContent, CardMedia, Typography } from '@mui/material';
+import { Button, Box, Card, CardContent, CardMedia, CircularProgress, Typography } from '@mui/material';
 import defaultUser from './img/defaultUser.jpg';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { getFirestore, doc, updateDoc, deleteDoc, arrayUnion } from "firebase/firestore";
 import { collection, query, where, getDocs, getDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import BucketListGlobal from "./BucketListGlobal";
-import { db } from './backend/FirebaseConfig'
 import './Home.css';
 
 function useUserInvitation(username) {
@@ -181,8 +180,24 @@ const Home = () => {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                <Typography variant="h4">Loading...</Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    minHeight: '100vh',
+                }}
+            >
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flex: 1,
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
             </Box>
         );
     }

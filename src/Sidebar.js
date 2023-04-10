@@ -34,6 +34,9 @@ const Sidebar = () => {
                     <a className="bm-item" href="/leaderboard">
                         Leaderboard
                     </a>
+                    <a className="bm-item" href="/community">
+                        Community Photos
+                    </a>
                     <a className="bm-item" href="/contact">
                         Contact Us
                     </a>

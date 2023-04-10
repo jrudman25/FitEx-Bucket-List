@@ -9,7 +9,7 @@ type ScavengerListItem = {
 
 const scavengerList: ScavengerListItem[] = [
     {
-        name: "Sunset Picture",
+        name: "Drillfield Sunset Picture",
         objective: "Take a picture of the drillfield at sunset.",
         points: 2,
         image: "https://firebasestorage.googleapis.com/v0/b/bucketlist-90b4c.appspot.com/o/default.jpg?alt=media&token=cfd75f88-2680-43ca-b69e-377690870da5",
@@ -45,7 +45,7 @@ const scavengerList: ScavengerListItem[] = [
         found: false
     },
     {
-        name: "Hokie Bird Statue Picture",
+        name: "D2 Hokie Bird Statue Picture",
         objective: "Take a picture of yourself with the Hokie Bird Statue by D2",
         points: 2,
         image: "https://firebasestorage.googleapis.com/v0/b/bucketlist-90b4c.appspot.com/o/default.jpg?alt=media&token=cfd75f88-2680-43ca-b69e-377690870da5",
@@ -81,7 +81,7 @@ const scavengerList: ScavengerListItem[] = [
         found: false
     },
     {
-        name: "Garden Picture",
+        name: "Horticulture Garden Picture",
         objective: "Take a picture of yourself inside of Hahn Horticulture Garden",
         points: 2,
         image: "https://firebasestorage.googleapis.com/v0/b/bucketlist-90b4c.appspot.com/o/default.jpg?alt=media&token=cfd75f88-2680-43ca-b69e-377690870da5",

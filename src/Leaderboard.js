@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Box, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { db } from './backend/FirebaseConfig';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import './Leaderboard.css';
@@ -29,15 +29,31 @@ function Leaderboard() {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                <Typography variant="h4">Loading...</Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    minHeight: '100vh',
+                }}
+            >
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flex: 1,
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
             </Box>
         );
     }
 
     return (
         <div className="leaderboard-container">
-            <h2>Leaderboard</h2>
+            <Typography variant="h5" sx={{marginTop: '0.5rem', marginBottom: '0.25rem', textAlign: 'center' }}>Leaderboard</Typography>
             <table className="leaderboard-table">
                 <thead>
                 <tr>

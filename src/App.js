@@ -12,6 +12,7 @@ import BucketList from './BucketList';
 import Group from './Group';
 import Signup from './Signup';
 import Contact from './Contact'
+import Community from "./Community";
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
                 <Route path="/bucketlist" element={<BucketList />} />
                 <Route path="/group" element={<Group />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route path="/community" element={<Community />} />
                 <Route path="/questionnaire" element={<Questionnaire />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="*" element={isLoggedIn ? <Navigate to="/home" /> : <Navigate to="/" />} />

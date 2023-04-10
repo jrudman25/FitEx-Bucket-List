@@ -1,6 +1,6 @@
 import React, { useState, useEffect, forwardRef } from "react";
 import Typography from '@mui/material/Typography';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Snackbar } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Snackbar, CircularProgress } from "@mui/material";
 import { Navigate } from 'react-router-dom';
 import { collection, query, where, addDoc, deleteDoc, doc, getDocs, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
@@ -164,8 +164,24 @@ const Group = () => {
 
     if (loading) {
         return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                <Typography variant="h4">Loading...</Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    minHeight: '100vh',
+                }}
+            >
+                <Box
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flex: 1,
+                    }}
+                >
+                    <CircularProgress />
+                </Box>
             </Box>
         );
     }

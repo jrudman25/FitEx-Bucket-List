@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, forwardRef } from "react";
 import { Box, FormControl, Button, MenuItem, Select, InputLabel, FormHelperText, Dialog, DialogTitle,
     DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography, Link, FormGroup,
-    FormLabel, FormControlLabel, Checkbox, Snackbar } from '@mui/material';
+    FormLabel, FormControlLabel, Checkbox, Snackbar, CircularProgress } from '@mui/material';
 import { Navigate } from 'react-router-dom';
 import BucketListGlobal from "./BucketListGlobal";
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -522,7 +522,10 @@ const BucketList = () => {
     const handleImageUpload = async (index, event) => {
         const file = event.target.files[0];
         if (file) {
-            const imageRef = ref(storage, `images/${user.email}/${file.name}`);
+            const activityName = userData.scavengerlist[index].name;
+            const newFileName = `${activityName}_${file.name}`;
+            const timestamp = Date.now();
+            const imageRef = ref(storage, `images/${user.email}/${timestamp}_${newFileName}`);
             await uploadBytes(imageRef, file).then(async () => {
                 await getDownloadURL(imageRef).then(async (url) => {
                     let temp = {...userData.scavengerlist[index] };
@@ -582,8 +585,24 @@ const BucketList = () => {
     return (
         <React.Fragment>
             {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                    <Typography variant="h4">Loading...</Typography>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        minHeight: '100vh',
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            flex: 1,
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
                 </Box>
             ) : !isInGroup ? (
                 <Typography align="center" variant="h6">
@@ -649,7 +668,7 @@ const BucketList = () => {
                                 <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
                                     <DialogTitle>{item.name}</DialogTitle>
                                     <DialogContent>
-                                        <Link href={item.link} target="_blank">Directions</Link>
+                                        <p>Starting place: <Link href={item.link} target="_blank">Directions</Link></p>
                                         <p>Difficulty: {item.difficulty}</p>
                                         <p>Points: {item.points}</p>
                                         <p>Length (distance): {item.length_distance} miles</p>
@@ -789,7 +808,7 @@ const BucketList = () => {
                                 <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
                                     <DialogTitle>{item.name}</DialogTitle>
                                     <DialogContent>
-                                        <Link href={item.link} target="_blank">Directions</Link>
+                                        <p>Starting place: <Link href={item.link} target="_blank">Directions</Link></p>
                                         <p>Difficulty: {item.difficulty}</p>
                                         <p>Points: {item.points}</p>
                                         <p>Length (distance): {item.length_distance} miles</p>
@@ -870,7 +889,7 @@ const BucketList = () => {
                                 <Dialog open={openDialog && dialogContent === item.name} onClose={handleClose}>
                                     <DialogTitle>{item.name}</DialogTitle>
                                     <DialogContent>
-                                        <Link href={item.link} target="_blank">Directions</Link>
+                                        <p>Starting place: <Link href={item.link} target="_blank">Directions</Link></p>
                                         <p>Difficulty: {item.difficulty}</p>
                                         <p>Points: {item.points}</p>
                                         <p>Length (distance): {item.length_distance} miles</p>
