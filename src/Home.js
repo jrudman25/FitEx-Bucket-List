@@ -6,6 +6,7 @@ import { getFirestore, doc, updateDoc, deleteDoc, arrayUnion } from "firebase/fi
 import { collection, query, where, getDocs, getDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import BucketListGlobal from "./BucketListGlobal";
+import { db } from './backend/FirebaseConfig'
 import './Home.css';
 
 function useUserInvitation(username) {
@@ -49,11 +50,12 @@ const Home = () => {
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.data();
                 setIsUserInGroup(!!userData.group);
-                setUserPoints(userData.points || 0);
+                setUserPoints(userData.user_points || 0);
+                setUserMiles(userData.miles || 0);
             }
         };
         fetchUserData();
-    }, [username, firestore]);
+    }, []);
 
     useEffect(() => {
         const fetchUserImage = async () => {
@@ -66,6 +68,7 @@ const Home = () => {
 
     const [invitation, clearInvitation] = useUserInvitation(username);
     const [userPoints, setUserPoints] = useState(0);
+    const [userMiles, setUserMiles] = useState(0);
 
 
     const [hasDeclinedInvite, setHasDeclinedInvite] = useState(false);
@@ -202,6 +205,9 @@ const Home = () => {
                 </label>
                 <Typography variant="h6" sx={{ marginTop: '0.75rem' }}>
                     Your Points: {userPoints.toFixed(2)}
+                </Typography>
+                <Typography variant="h6" sx={{ marginTop: '0.75rem' }}>
+                    You've hiked: {userMiles.toFixed(2)} miles
                 </Typography>
             </div>
             {invitation && (

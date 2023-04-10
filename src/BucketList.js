@@ -239,6 +239,10 @@ const BucketList = () => {
         }
         if (started === index) {
             clearWatch();
+            let userRef = doc(db, 'users', user.email);
+            await updateDoc(userRef, {miles: increment(distanceTravelled)}).then(() => {
+                console.log("Miles walked has been updated.")
+            });
             await awardPoints(index, from);
 
             await adjustBucketLists(index, from);
@@ -535,13 +539,19 @@ const BucketList = () => {
                         scavengerlist: arrayUnion(userData.scavengerlist[index])
                     }).then(async () => {
                         console.log("updated the image location!");
-                        const userRef = doc(db, 'users', user.email);
-                        await updateDoc(userRef, {user_points: increment(2)}).then(() => {
+                        let userRef = doc(db, 'users', user.email);
+                        await updateDoc(userRef, { user_points: increment(2) }).then(() => {
                             console.log("awarded the player 2 points!");
                             setSeverity('success');
                             showSnackbar("You got 2 points!");
                             setCheckScav(false);
                             setDialogContent("");
+
+                        });
+
+                        let groupRef = doc(db, 'groups', userData.group);
+                        await updateDoc(groupRef, { group_points: increment(2) }).then(() => {
+                            console.log("updated user points as well.")
                         })
                     });
                 });

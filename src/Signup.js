@@ -13,6 +13,7 @@ let user = {
     scavengerlist: ScavengerListGlobal,
     group: "",
     email: "",
+    miles: 0,
     user_points: 0,
     profile_picture: "",
     linked: false

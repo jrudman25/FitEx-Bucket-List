@@ -178,7 +178,7 @@ const Group = () => {
                 </Typography>
                 {group && (
                     <Typography variant="h5" textAlign="center" sx={{ mb: 4 }}>
-                        Group points: {groupPoints}
+                        Group points: {groupPoints.toFixed(2)}
                     </Typography>
                 )}
                 {group && (
@@ -206,7 +206,7 @@ const Group = () => {
                             <DialogContent>
                                 <p>Enter the email of the member you want to add to your group.</p>
                             </DialogContent>
-                            <TextField autoFocus label="Email" type="email" variant="standard" id="invitee" />
+                            <TextField autoFocus label="Email" type="email" variant="standard" id="invitee" sx={{ margin: 2}}/>
                             <DialogActions>
                                 <Button onClick={handleClose}>Cancel</Button>
                                 <Button onClick={handleInvite}>Invite</Button>
