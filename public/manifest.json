@@ -1,6 +1,6 @@
 {
   "short_name": "Bucket List",
-  "name": "FitEx Bucket List",
+  "name": "Hokie Bucket List",
   "icons": [
     {
       "src": "bucketListIcon.png",
@@ -10,6 +10,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
+  "theme_color": "#630031",
   "background_color": "#ffffff"
 }

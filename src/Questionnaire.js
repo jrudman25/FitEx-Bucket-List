@@ -1,18 +1,18 @@
-import React, {useEffect, useState} from 'react';
-import { Button } from '@mui/material';
+import React, {useEffect, useState, forwardRef } from 'react';
+import { Button, Snackbar } from '@mui/material';
 import BucketListGlobal from "./BucketListGlobal";
 import {onAuthStateChanged} from "firebase/auth";
 import {auth, db} from "./backend/FirebaseConfig";
 import {doc, getDoc, updateDoc } from "firebase/firestore";
-import {Alert, Snackbar} from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
+import MuiAlert from '@mui/material/Alert';
 
 const Questionnaire = () => {
 
     const [selectedAnswers, setSelectedAnswers] = useState(Array(4).fill(''));
     const [user, setUser] = useState(null);
-    const [openAlert, setOpenAlert] = useState(false);
-    const [message, setMessage] = useState("");
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
     const [surveyCompleted, setSurveyCompleted] = useState(false);
     const navigate = useNavigate();
     const questions = [
@@ -76,6 +76,21 @@ const Questionnaire = () => {
         return () => {};
     }, []);
 
+    const Alert = forwardRef((props, ref) => {
+        return <MuiAlert ref={ref} elevation={6} variant="filled" {...props} />;
+    });
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
+
+    const showSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarOpen(true);
+    };
 
     const handleAnswerSelection = (event, questionIndex) => {
         const newSelectedAnswers = [...selectedAnswers];
@@ -87,7 +102,7 @@ const Questionnaire = () => {
     const handleSurveySubmit = async (event) => {
         event.preventDefault();
         if (selectedAnswers.some(answer => answer === '')) {
-            alert("Please answer all of the questions!");
+            showSnackbar("Please answer all of the questions!");
             return;
         }
         const totalValue = selectedAnswers.reduce((total, answerValue) => total + answerValue, 0);
@@ -99,8 +114,6 @@ const Questionnaire = () => {
         let userRef = doc(db, 'users', user.email);
         await updateDoc(userRef, {bucketlist : personalBucketlist, surveyCompleted: true}).then(() => {
             console.log("created the personal bucketlist and put it in firebase!");
-            setMessage("Created a personalized bucketlist just for you!");
-            setOpenAlert(true);
             navigate('/home');
         }).catch((error) => {
             console.log("something went wrong...");
@@ -234,12 +247,10 @@ const Questionnaire = () => {
                 ))}
                 <Button type="submit" variant="contained" sx={{ marginTop: '1rem', marginBottom: '1rem' }}>Submit survey</Button>
             </form>
-            <Snackbar
-                open={openAlert}
-                autoHideDuration={5000}
-                onClose={() => setOpenAlert(false)}
-            >
-                <Alert severity="success">{message}</Alert>
+            <Snackbar open={snackbarOpen} autoHideDuration={4500} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity="warning">
+                    {snackbarMessage}
+                </Alert>
             </Snackbar>
         </div>
     );

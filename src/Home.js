@@ -41,6 +41,20 @@ const Home = () => {
     const user = username.substring(0, username.lastIndexOf('@'));
     const [loading, setLoading] = useState(true);
     const [image, setImage] = useState(getUserImage(username) || defaultUser);
+    const [isUserInGroup, setIsUserInGroup] = useState(false);
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userRef = doc(firestore, "users", username);
+            const userSnapshot = await getDoc(userRef);
+            if (userSnapshot.exists()) {
+                const userData = userSnapshot.data();
+                setIsUserInGroup(!!userData.group);
+                setUserPoints(userData.points || 0);
+            }
+        };
+        fetchUserData();
+    }, [username, firestore]);
+
     useEffect(() => {
         const fetchUserImage = async () => {
             const imageUrl = await getUserImage(username);
@@ -51,6 +65,8 @@ const Home = () => {
     }, [username]);
 
     const [invitation, clearInvitation] = useUserInvitation(username);
+    const [userPoints, setUserPoints] = useState(0);
+
 
     const [hasDeclinedInvite, setHasDeclinedInvite] = useState(false);
     useEffect(() => {
@@ -184,6 +200,9 @@ const Home = () => {
                     />
                     <img src={image} alt="Profile" className="profile-image" />
                 </label>
+                <Typography variant="h6" sx={{ marginTop: '0.75rem' }}>
+                    Your Points: {userPoints}
+                </Typography>
             </div>
             {invitation && (
                 <div className="invitation-container">
@@ -206,31 +225,41 @@ const Home = () => {
                 <a href="/bucketlist" className="home-link">Bucket List</a>
             </div>
             <div className="link-container">
-                <Link to="/bucketlist" style={{ textDecoration: 'none' }}>
-                    <Card key="recommendedHike" sx={{ width: 400, maxWidth: 499}}>
-                        <CardMedia
-                            component="img"
-                            height="140"
-                            width="300"
-                            image={randomHike.image}
-                            alt={randomHike.name}
-                        />
-                        <CardContent>
-                            <Typography variant="h5" component="h2">
-                                {randomHike.name}
-                            </Typography>
-                            <Typography color="textSecondary">
-                                Points: {randomHike.points}
-                            </Typography>
-                            <Typography color="textSecondary">
-                                Distance: {randomHike.length_distance} miles
-                            </Typography>
-                            <Typography color="textSecondary">
-                                Recommended for you!
-                            </Typography>
-                        </CardContent>
-                    </Card>
-                </Link>
+                {isUserInGroup ? (
+                    <div className="recommendation-container">
+                        <Link to="/bucketlist" style={{ textDecoration: 'none' }}>
+                            <Card key="recommendedHike" sx={{ width: 350, maxWidth: 499 }}>
+                                <CardMedia
+                                    component="img"
+                                    height="140"
+                                    width="300"
+                                    image={randomHike.image}
+                                    alt={randomHike.name}
+                                />
+                                <CardContent>
+                                    <Typography variant="h5" component="h2">
+                                        {randomHike.name}
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Points: {randomHike.points}
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Distance: {randomHike.length_distance} miles
+                                    </Typography>
+                                    <Typography color="textSecondary">
+                                        Recommended for you!
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    </div>
+                ) : (
+                    <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center',  textAlign: 'center'}}>
+                        <Typography variant="h6" sx={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                            Please join a group to get a recommended hike here!
+                        </Typography>
+                    </Box>
+                )}
             </div>
         </div>
     );

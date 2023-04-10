@@ -1,17 +1,37 @@
-import React, { useState } from 'react';
-import { Box, TextField, Button } from '@mui/material';
+import React, { useState, forwardRef } from 'react';
+import { Box, TextField, Button, Snackbar } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { auth } from './backend/FirebaseConfig';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import MuiAlert from '@mui/material/Alert';
 
 const Login = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [severity, setSeverity] = useState('error');
     const navigate = useNavigate();
 
+    const Alert = forwardRef((props, ref) => {
+        return <MuiAlert ref={ref} elevation={6} variant="filled" {...props} />;
+    });
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
+
+    const showSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarOpen(true);
+    };
+
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
-        return <Navigate to="/bucketlist" />;
+        return <Navigate to="/home" />;
     }
 
     const handleUsernameChange = event => setEmail(event.target.value);
@@ -20,23 +40,58 @@ const Login = () => {
     const handleSubmit = async event => {
         event.preventDefault();
         await signInWithEmailAndPassword(auth, email, password).then(() => {
-            navigate('/home');
+            if (!auth.currentUser.emailVerified) {
+                showSnackbar("Please verify your email before logging in.");
+                return;
+            }
+            setSeverity("success");
+            showSnackbar("Successful login!")
             sessionStorage.setItem('username', email);
-            sessionStorage.setItem('isLoggedIn', true);
+            setTimeout(() => {
+                navigate('/home');
+                sessionStorage.setItem('isLoggedIn', true);
+            }, 1750);
         }).catch((error) => {
+            console.log(error.code);
             if (error.code === 'auth/invalid-email') {
-                alert("Please log in with a valid email");
+                showSnackbar("Invalid email.");
             }
             else if (error.code === 'auth/user-not-found') {
-                alert("User not found");
+                showSnackbar("User not found.");
             }
-            else if (password === '' || error.code === 'auth/wrong-password') {
-                alert("Incorrect password");
+            else if (error.code === 'auth/missing-password') {
+                showSnackbar("Please enter your password.");
+            }
+            else if (error.code === 'auth/wrong-password') {
+                showSnackbar("Incorrect password.");
             }
             else {
-                alert("An unexpected error has occurred. Please reload and try again.");
+                showSnackbar("An unexpected error has occurred. Please reload and try again.");
             }
         })
+    };
+
+    const handleForgotPassword = async () => {
+        if (email === '') {
+            showSnackbar('Please enter your email address to reset your password.');
+        }
+        else {
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showSnackbar('A password reset email has been sent to your email address.');
+            } catch (error) {
+                console.log(error.code)
+                if (error.code === 'auth/invalid-email') {
+                    showSnackbar("Please enter a valid email.");
+                }
+                else if (error.code === 'auth/user-not-found') {
+                    showSnackbar("User not found.");
+                }
+                else {
+                    showSnackbar('An error occurred while sending the password reset email. Please try again.');
+                }
+            }
+        }
     };
 
     return (
@@ -74,8 +129,21 @@ const Login = () => {
                         <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                             Submit
                         </Button>
+                        <Button
+                            variant="text"
+                            color="secondary"
+                            onClick={handleForgotPassword}
+                            sx={{ marginTop: '1rem' }}
+                        >
+                            Forgot Password?
+                        </Button>
                     </Box>
                 </form>
+                <Snackbar open={snackbarOpen} autoHideDuration={4500} onClose={handleSnackbarClose}>
+                    <Alert onClose={handleSnackbarClose} severity={severity}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
             </Box>
         </div>
     );

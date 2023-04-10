@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import React, { useState, forwardRef } from 'react';
+import { Box, TextField, Button, Snackbar, Typography } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { db, auth } from './backend/FirebaseConfig';
 import { doc, setDoc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification  } from "firebase/auth";
 import ScavengerListGlobal from './ScavengerListGlobal';
+import MuiAlert from '@mui/material/Alert';
 
 let user = {
     bucketlist: [],
@@ -21,7 +22,27 @@ const Signup = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [passwordConfirm, setPasswordConfirm] = useState('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [severity, setSeverity] = useState('error');
     const navigate = useNavigate();
+
+    const Alert = forwardRef((props, ref) => {
+        return <MuiAlert ref={ref} elevation={6} variant="filled" {...props} />;
+    });
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
+
+    const showSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarOpen(true);
+    };
 
     if (sessionStorage.getItem('isLoggedIn') === 'true') {
         return <Navigate to="/home" />;
@@ -29,28 +50,41 @@ const Signup = () => {
 
     const handleUsernameChange = event => setEmail(event.target.value);
     const handlePasswordChange = event => setPassword((event.target.value));
+    const handlePasswordConfirmChange = event => setPasswordConfirm((event.target.value));
 
     const handleSubmit = async event => {
         event.preventDefault();
-        await createUserWithEmailAndPassword(auth, email, password).then(async (cred) => {
-            alert("Successfully created account!")
-            user.email = email;
-            sessionStorage.setItem('username', email);
-            await setDoc(doc(db, 'users', email), user);
-            sessionStorage.setItem("isLoggedIn", true)
-            navigate('/questionnaire');
-        }).catch((error) => {
-            console.log(error.code)
-            if (error.code === 'auth/email-already-in-use') {
-                alert("This email is already in use. Please sign up with a different email.");
-            }
-            else if(error.code === 'auth/weak-password' || password === '') {
-                alert("Please create a password that meets the specifications below.")
-            }
-            else {
-                alert("An unexpected error has occurred. Please reload and try again.");
-            }
-        })
+        if (password !== passwordConfirm) {
+            showSnackbar("Passwords do not match!");
+            return;
+        }
+        await createUserWithEmailAndPassword(auth, email, password)
+            .then(async (cred) => {
+                // Send email verification
+                await sendEmailVerification(cred.user).then(() => {
+                    setSeverity('success');
+                    showSnackbar("Successfully created account! Please check your email for verification.");
+                }).catch(() => {
+                    showSnackbar("An error occurred while sending the verification email. Please try again.");
+                });
+                await setDoc(doc(db, 'users', email), user);
+                setTimeout(() => {
+                    navigate('/');
+                }, 2000);
+            }).catch((error) => {
+                if (error.code === 'auth/invalid-email' || error.code === 'auth/missing-email') {
+                    showSnackbar("Please enter a valid email.");
+                }
+                else if (error.code === 'auth/email-already-in-use') {
+                    showSnackbar("This email is already in use. Please sign up with a different email.");
+                }
+                else if (error.code === 'auth/weak-password' || password === '') {
+                    showSnackbar("Please create a password that meets the specifications below.");
+                }
+                else {
+                    showSnackbar("An unexpected error has occurred. Please reload and try again.");
+                }
+            });
     };
 
     return (
@@ -85,6 +119,14 @@ const Signup = () => {
                             onChange={handlePasswordChange}
                             sx={{margin: 0.5}}
                         />
+                        <TextField
+                            id="password-confirm"
+                            label="Confirm Password"
+                            type="password"
+                            value={passwordConfirm}
+                            onChange={handlePasswordConfirmChange}
+                            sx={{margin: 0.5}}
+                        />
                         <Button type="submit" variant="contained" sx={{ marginTop: '1rem' }}>
                             Submit
                         </Button>
@@ -99,6 +141,11 @@ const Signup = () => {
                     <li>Password must be at least 6 characters</li>
                 </ul>
             </Box>
+            <Snackbar open={snackbarOpen} autoHideDuration={4500} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity={severity}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

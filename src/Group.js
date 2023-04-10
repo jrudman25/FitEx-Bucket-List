@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import Typography from '@mui/material/Typography';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Snackbar } from "@mui/material";
 import { Navigate } from 'react-router-dom';
 import { collection, query, where, addDoc, deleteDoc, doc, getDocs, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import { getFirestore } from "firebase/firestore";
+import MuiAlert from '@mui/material/Alert';
 
 const Group = () => {
 
@@ -14,6 +15,25 @@ const Group = () => {
     const [groupMembers, setGroupMembers] = useState([]);
     const username = sessionStorage.getItem("username");
     const [open, setOpen] = useState(false);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [severity, setSeverity] = useState('warning');
+
+    const Alert = forwardRef((props, ref) => {
+        return <MuiAlert ref={ref} elevation={6} variant="filled" {...props} />;
+    });
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
+
+    const showSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarOpen(true);
+    };
 
     const [group, setGroup] = useState('');
     useEffect(() => {
@@ -64,25 +84,34 @@ const Group = () => {
     const handleInvite = async () => {
         const invitee = document.getElementById("invitee").value;
         if (invitee === username) {
-            alert("You're already in this group, invite your friends!");
+            showSnackbar("You're already in this group, invite your friends!");
             return;
         }
         else if (groupMembers.includes(invitee)) {
-            alert("This user is already in the group.");
+            showSnackbar("This user is already in the group.");
             return;
         }
         const userRef = doc(firestore, "users", invitee);
         const userData = await getDoc(userRef);
         if (userData.exists()) {
             if (userData.data().group) {
-                alert("This user is already in a group, please have them leave it before inviting.");
+                showSnackbar("This user is already in a group, please have them leave it before inviting.");
                 return;
             }
-            sendInvite(invitee);
-            alert("Invite sent!");
+            const invitationsRef = collection(firestore, "invitations");
+            const existingInvitation = await getDocs(query(invitationsRef, where("email", "==", invitee)));
+            if (existingInvitation.empty) {
+                await addDoc(invitationsRef, { email: invitee, from: username, groupName: group });
+                setSeverity("success")
+                showSnackbar("Invite sent!");
+            }
+            else {
+                showSnackbar("This user has already been invited.");
+            }
             setOpen(false);
-        } else {
-            alert("User not found.");
+        }
+        else {
+            showSnackbar("User not found.");
         }
     };
 
@@ -91,7 +120,7 @@ const Group = () => {
         if (groupName) {
             const existingGroup = await getDocs(query(groupsRef, where("name", "==", groupName)));
             if (!existingGroup.empty) {
-                alert(`The group name '${groupName}' is already taken. Please choose a different name.`);
+                showSnackbar(`The group name '${groupName}' is already taken. Please choose a different name.`);
                 return;
             }
             await setDoc(doc(groupsRef, groupName), { name: groupName, members: [username], group_points: 0 });
@@ -126,16 +155,6 @@ const Group = () => {
             } else {
                 console.error("Error: group document not found");
             }
-        }
-    };
-
-    const sendInvite = async (invitee) => {
-        const invitationsRef = collection(firestore, "invitations");
-        const existingInvitation = await getDocs(query(invitationsRef, where("email", "==", invitee)));
-        if (existingInvitation.empty) {
-            await addDoc(invitationsRef, { email: invitee, from: username, groupName: group });
-        } else {
-            alert("This user has already been invited.");
         }
     };
 
@@ -185,7 +204,7 @@ const Group = () => {
                         <Dialog open={open} onClose={handleClose}>
                             <DialogTitle>Invite Members</DialogTitle>
                             <DialogContent>
-                                <p>Enter the email of the member you want to add to your group</p>
+                                <p>Enter the email of the member you want to add to your group.</p>
                             </DialogContent>
                             <TextField autoFocus label="Email" type="email" variant="standard" id="invitee" />
                             <DialogActions>
@@ -203,6 +222,11 @@ const Group = () => {
                     </Box>
                 )}
             </Box>
+            <Snackbar open={snackbarOpen} autoHideDuration={4500} onClose={handleSnackbarClose}>
+                <Alert onClose={handleSnackbarClose} severity={severity}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };

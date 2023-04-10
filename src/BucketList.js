@@ -1,7 +1,7 @@
-import React, {useState, useRef, useEffect} from "react";
+import React, { useState, useRef, useEffect, forwardRef } from "react";
 import { Box, FormControl, Button, MenuItem, Select, InputLabel, FormHelperText, Dialog, DialogTitle,
     DialogContent, DialogActions, Card, CardContent, CardMedia, CardActions, Typography, Link, FormGroup,
-    FormLabel, FormControlLabel, Checkbox, Alert, Snackbar } from '@mui/material';
+    FormLabel, FormControlLabel, Checkbox, Snackbar } from '@mui/material';
 import { Navigate } from 'react-router-dom';
 import BucketListGlobal from "./BucketListGlobal";
 import BottomNavigation from '@mui/material/BottomNavigation';
@@ -14,6 +14,7 @@ import { db, auth, storage } from './backend/FirebaseConfig';
 import { doc, getDoc, updateDoc, onSnapshot, arrayRemove, arrayUnion, increment } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { ref, getDownloadURL, uploadBytes } from 'firebase/storage';
+import MuiAlert from '@mui/material/Alert';
 
 const BucketList = () => {
     const [openDialog, setOpenDialog] = useState(false);
@@ -38,48 +39,72 @@ const BucketList = () => {
     const [linkedDialog, setLinkedDialog] = useState(false);
     const [linkedDialogIndex, setLinkedDialogIndex] = useState(-1);
     const [checkScav, setCheckScav] = useState(false);
-    const [openAlert, setOpenAlert] = useState(false);
-    const [message, setMessage] = useState("");
     const [isInGroup, setIsInGroup] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [severity, setSeverity] = useState('warning');
+
+    const Alert2 = forwardRef((props, ref) => {
+        return <MuiAlert ref={ref} elevation={6} variant="filled" {...props} />;
+    });
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
+
+    const showSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarOpen(true);
+    };
 
     //loads the necessary data from firebase into the webpage
     useEffect(() => {
         (async () => {
-            onAuthStateChanged(auth, async (user) => {
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     setUser(auth.currentUser);
 
                     let userRef = doc(db, 'users', auth.currentUser.email);
-                    await getDoc(userRef).then(async (userDoc) => {
-                        let userDocClone = {...userDoc.data() };
-                        setUserData(userDocClone);
+                    const userDoc = await getDoc(userRef);
+                    let userDocClone = { ...userDoc.data() };
+                    setUserData(userDocClone);
+
+                    if (userDocClone.group) {
                         let groupRef = doc(db, 'groups', userDoc.data().group);
-                        await getDoc(groupRef).then((groupDoc) => {
-                            let groupDocClone = {...groupDoc.data() };
-                            setUserGroup(groupDocClone);
-                            setIsInGroup(true);
-                            for (let i = 0; i < groupDocClone.members.length; i++) {
-                                if (groupDocClone.members[i] !== auth.currentUser.email) {
-                                    setGroupMembers(groupMembers => [...groupMembers, {name: groupDocClone.members[i], bool: false}]);
-                                }
-                                if (i === groupDocClone.members.length - 1) {
-                                    setAcquiredData(true);
-                                    setLoading(false);
-                                }
+                        const groupDoc = await getDoc(groupRef);
+                        let groupDocClone = { ...groupDoc.data() };
+                        setUserGroup(groupDocClone);
+                        setIsInGroup(true);
+
+                        for (let i = 0; i < groupDocClone.members.length; i++) {
+                            if (groupDocClone.members[i] !== auth.currentUser.email) {
+                                setGroupMembers(groupMembers => [...groupMembers, { name: groupDocClone.members[i], bool: false }]);
                             }
-                        });
-                    });
+                            if (i === groupDocClone.members.length - 1) {
+                                setAcquiredData(true);
+                            }
+                        }
+                    }
 
                     const unsub = onSnapshot(userRef, (userDoc) => {
                         setLinked(userDoc.data().linked);
-                    })
+                    });
                 }
+                // Set fetchingDone to true and setLoading to false after fetching process is completed
+                setLoading(false);
             });
-        })();
 
-        return () => {};
+            return () => {
+                // Unsubscribe from onAuthStateChanged when the component is unmounted
+                unsubscribe();
+            };
+        })();
     }, []);
+
 
     //if linked changes then this function executes
     useEffect(() => {
@@ -95,14 +120,6 @@ const BucketList = () => {
         return <Navigate to="/" />;
     }
 
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-                <Typography variant="h4">Loading...</Typography>
-            </Box>
-        );
-    }
-
     //opens the dialog for the necessary bucket list item
     const handleClick = (content) => {
         setOpenDialog(true);
@@ -116,7 +133,8 @@ const BucketList = () => {
             setDialogContent(content);
         }
         else {
-            alert("You need to finish the hike you started before you start a new hike.");
+            setSeverity('warning');
+            showSnackbar("You need to finish the hike you started before you start a new hike.");
         }
     };
 
@@ -137,7 +155,8 @@ const BucketList = () => {
             if (groupMembers[i].bool) {
                 userRef = doc(db, 'users', groupMembers[i].name);
                 await updateDoc(userRef, { linked: true }).then(() => {
-                    alert("Group Member " + groupMembers[i].name + " will be notified shortly.");
+                    setSeverity("success")
+                    showSnackbar("Group Member " + groupMembers[i].name + " will be notified shortly.");
                 })
             }
         }
@@ -166,10 +185,12 @@ const BucketList = () => {
             handleStartHike(index, "all");
         }
         else if (index === -1) {
-            alert("Please select a hike to start.");
+            setSeverity('warning');
+            showSnackbar("Please select a hike to start.");
         }
         else {
-            alert("Please complete your current hike before starting another.");
+            setSeverity('warning');
+            showSnackbar("Please complete your current hike before starting another.");
         }
     }
 
@@ -243,7 +264,8 @@ const BucketList = () => {
             setDialogContent("");
         }
         else {
-            alert("You need to start the hike to be able to complete it!");
+            setSeverity('warning');
+            showSnackbar("You need to start the hike to be able to complete it!");
         }
     }
 
@@ -254,14 +276,15 @@ const BucketList = () => {
         let userRef = doc(db, 'users', user.email);
         await updateDoc(userRef, { linked: false }).then(() => {
             console.log("Link has been rejected.");
-            setMessage("You are no longer linked!");
-            setOpenAlert(true);
+            setSeverity('warning');
+            showSnackbar("You are no longer linked!");
         });
     }
 
     //clears the watch position which was established when the hike started
     const clearWatch = () => {
-        alert("We have stopped tracking your position");
+        setSeverity('warning');
+        showSnackbar("We have stopped tracking your position.");
         navigator.geolocation.clearWatch(id);
     }
 
@@ -288,8 +311,8 @@ const BucketList = () => {
             if (hike_difficulty === "EASY" && earned_points_raw > 6) {
                 await updateDoc(userRef, {user_points: increment(6)}).then(() => {
                     console.log("Successfully awarded user " + String(6) + " points.");
-                    setMessage("You got " + String(6) + " points!");
-                    setOpenAlert(true);
+                    setSeverity('success');
+                    showSnackbar("You got " + String(6) + " points!");
                 });
                 await updateDoc(groupRef, {group_points: increment(6)}).then(() => {
                     console.log("Successfully awarded group " + String(6) + " points.");
@@ -298,8 +321,8 @@ const BucketList = () => {
             else if (hike_difficulty === "MODERATE" && earned_points_raw > 12) {
                 await updateDoc(userRef, {user_points: increment(12)}).then(() => {
                     console.log("Successfully awarded user " + String(12) + " points.");
-                    setMessage("You got " + String(12) + " points!");
-                    setOpenAlert(true);
+                    setSeverity('success');
+                    showSnackbar("You got " + String(12) + " points!");
                 });
                 await updateDoc(groupRef, {group_points: increment(12)}).then(() => {
                     console.log("Successfully awarded group " + String(12) + " points.");
@@ -308,8 +331,8 @@ const BucketList = () => {
             else if (hike_difficulty === "HARD" && earned_points_raw > 18) {
                 await updateDoc(userRef, {user_points: increment(18)}).then(() => {
                     console.log("Successfully awarded user " + String(18) + " points.");
-                    setMessage("You got " + String(18) + " points!");
-                    setOpenAlert(true);
+                    setSeverity('success');
+                    showSnackbar("You got " + String(18) + " points!");
                 });
                 await updateDoc(groupRef, {group_points: increment(18)}).then(() => {
                     console.log("Successfully awarded group " + String(18) + " points.");
@@ -318,8 +341,8 @@ const BucketList = () => {
             else {
                 await updateDoc(userRef, {user_points: increment(earned_points_raw)}).then(() => {
                     console.log("Successfully awarded user " + String(earned_points_raw.toFixed(2)) + " points.");
-                    setMessage("You got " + String(earned_points_raw.toFixed(2)) + " points!");
-                    setOpenAlert(true);
+                    setSeverity('success');
+                    showSnackbar("You got " + String(earned_points_raw.toFixed(2)) + " points!");
                 });
                 await updateDoc(groupRef, {group_points: increment(earned_points_raw)}).then(() => {
                     console.log("Successfully awarded group " + String(earned_points_raw.toFixed(2)) + " points.");
@@ -331,8 +354,8 @@ const BucketList = () => {
             if (hike_difficulty === "EASY" && earned_points_raw > 5) {
                 await updateDoc(userRef, {user_points: increment(5)}).then(() => {
                     console.log("Successfully awarded user " + String(5) + " points.");
-                    setMessage("You got " + String(5) + " points!");
-                    setOpenAlert(true);
+                    setSeverity('success');
+                    showSnackbar("You got " + String(5) + " points!");
                 });
                 await updateDoc(groupRef, {group_points: increment(5)}).then(() => {
                     console.log("Successfully awarded group " + String(5) + " points.");
@@ -341,8 +364,8 @@ const BucketList = () => {
             else if (hike_difficulty === "MODERATE" && earned_points_raw > 10) {
                 await updateDoc(userRef, {user_points: increment(10)}).then(() => {
                     console.log("Successfully awarded user " + String(10) + " points.");
-                    setMessage("You got " + String(10) + " points!");
-                    setOpenAlert(true);
+                    setSeverity('success');
+                    showSnackbar("You got " + String(10) + " points!");
                 });
                 await updateDoc(groupRef, {group_points: increment(10)}).then(() => {
                     console.log("Successfully awarded group " + String(10) + " points.");
@@ -351,8 +374,8 @@ const BucketList = () => {
             else if (hike_difficulty === "HARD" && earned_points_raw > 15) {
                 await updateDoc(userRef, {user_points: increment(15)}).then(() => {
                     console.log("Successfully awarded user " + String(15) + " points.");
-                    setMessage("You got " + String(15) + " points!");
-                    setOpenAlert(true);
+                    setSeverity('success');
+                    showSnackbar("You got " + String(15) + " points!");
                 });
                 await updateDoc(groupRef, {group_points: increment(15)}).then(() => {
                     console.log("Successfully awarded group " + String(15) + " points.");
@@ -361,13 +384,12 @@ const BucketList = () => {
             else {
                 await updateDoc(userRef, {user_points: earned_points_raw}).then(() => {
                     console.log("Successfully awarded user " + String(earned_points_raw.toFixed(2)) + " points.");
-                    setMessage("You got " + String(earned_points_raw.toFixed(2)) + " points!");
-                    setOpenAlert(true);
+                    setSeverity('success');
+                    showSnackbar("You got " + String(earned_points_raw.toFixed(2)) + " points!");
                 });
                 await updateDoc(groupRef, {group_points: increment(earned_points_raw)}).then(() => {
                     console.log("Successfully awarded group " + String(earned_points_raw.toFixed(2)) + " points.");
                 });
-
             }
         }
     };
@@ -423,7 +445,8 @@ const BucketList = () => {
                     })
                 }
                 else {
-                    alert("Please get closer to the beginning of the hike!");
+                    setSeverity('warning');
+                    showSnackbar("Please get closer to the beginning of the hike!");
 
                     if (linked) {
                         let userRef = doc(db, 'users', user.email);
@@ -437,13 +460,15 @@ const BucketList = () => {
                     }
                 }
             }, () => {
-                alert("Couldn't get your coordinates");
+                setSeverity('error');
+                showSnackbar("Couldn't get your coordinates");
             }, {
                 enableHighAccuracy: true
             })
         }
         else {
-            alert("Geolocation is not supported");
+            setSeverity('error');
+            showSnackbar("Geolocation is not supported");
         }
     }
 
@@ -464,19 +489,22 @@ const BucketList = () => {
                     setCheckScav(true);
                 }
                 else {
-                    alert("Please get closer to the hunt!");
+                    setSeverity('warning');
+                    showSnackbar("Please get closer to the hunt!");
                     setCheckScav(false);
 
                 }
             }, () => {
-                alert("Couldn't get your coordinates");
+                setSeverity('error');
+                showSnackbar("Couldn't get your coordinates");
                 setCheckScav(false);
             }, {
                 enableHighAccuracy: true
             });
         }
         else {
-            alert("Geolocation is not supported");
+            setSeverity('error');
+            showSnackbar("Geolocation is not supported");
             setCheckScav(false);
         }
     }
@@ -510,8 +538,8 @@ const BucketList = () => {
                         const userRef = doc(db, 'users', user.email);
                         await updateDoc(userRef, {user_points: increment(2)}).then(() => {
                             console.log("awarded the player 2 points!");
-                            setMessage("You got 2 points!");
-                            setOpenAlert(true);
+                            setSeverity('success');
+                            showSnackbar("You got 2 points!");
                             setCheckScav(false);
                             setDialogContent("");
                         })
@@ -543,9 +571,13 @@ const BucketList = () => {
 
     return (
         <React.Fragment>
-            {!isInGroup ? (
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                    <Typography variant="h4">Loading...</Typography>
+                </Box>
+            ) : !isInGroup ? (
                 <Typography align="center" variant="h6">
-                    You must first create or join a group before viewing the bucket list
+                    You must first create or join a group before viewing the bucket list.
                 </Typography>
             ) : (
                 <>
@@ -576,7 +608,7 @@ const BucketList = () => {
                     <Box>
                         {BucketListGlobal.map((item, index) => (
                             <React.Fragment key={item.name + "_all"}>
-                                <Card sx={{ width: 400, maxWidth: 499 }} >
+                                <Card sx={{ width: 350, maxWidth: 499 }} >
                                     <CardMedia
                                         sx={{ height: 140 }}
                                         component="img"
@@ -663,7 +695,7 @@ const BucketList = () => {
                     <Box>
                         {acquiredData && userData.scavengerlist.map((item, index2) => (
                             <React.Fragment key={item.name + "_hunt"}>
-                                <Card sx={{ width: 400, maxWidth: 499 }} >
+                                <Card sx={{ width: 350, maxWidth: 499 }} >
                                     <CardMedia
                                         sx={{ height: 140 }}
                                         component="img"
@@ -716,7 +748,7 @@ const BucketList = () => {
                     <Box>
                         {acquiredData && userData.bucketlist.map((item, index3) => (
                             <React.Fragment key={item.name + "_hikes"}>
-                                <Card sx={{ width: 400, maxWidth: 499 }} >
+                                <Card sx={{ width: 350, maxWidth: 499 }} >
                                     <CardMedia
                                         sx={{ height: 140 }}
                                         component="img"
@@ -803,7 +835,7 @@ const BucketList = () => {
                     <Box>
                         {acquiredData && userData.completed.map((item, index4) => (
                             <React.Fragment key={item.name + "_completed"}>
-                                <Card sx={{ width: 400, maxWidth: 499 }} >
+                                <Card sx={{ width: 350, maxWidth: 499 }} >
                                     <CardMedia
                                         sx={{ height: 140 }}
                                         component="img"
@@ -876,12 +908,10 @@ const BucketList = () => {
                     <Button size="small" onClick={() => setLinkedDialog(false)}>Cancel</Button>
                 </DialogActions>
             </Dialog>
-            <Snackbar
-                open={openAlert}
-                autoHideDuration={5000}
-                onClose={() => setOpenAlert(false)}
-            >
-                <Alert severity="success">{message}</Alert>
+            <Snackbar open={snackbarOpen} autoHideDuration={4500} onClose={handleSnackbarClose}>
+                <Alert2 onClose={handleSnackbarClose} severity={severity}>
+                    {snackbarMessage}
+                </Alert2>
             </Snackbar>
             </>
             )}
