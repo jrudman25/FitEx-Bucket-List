@@ -201,7 +201,7 @@ const Home = () => {
                     <img src={image} alt="Profile" className="profile-image" />
                 </label>
                 <Typography variant="h6" sx={{ marginTop: '0.75rem' }}>
-                    Your Points: {userPoints}
+                    Your Points: {userPoints.toFixed(2)}
                 </Typography>
             </div>
             {invitation && (

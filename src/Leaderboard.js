@@ -51,7 +51,7 @@ function Leaderboard() {
                     <tr className={index % 2 === 0 ? 'even-row' : 'odd-row'} key={name}>
                         <td>{index + 1}</td>
                         <td>{name}</td>
-                        <td>{group_points.toLocaleString()}</td>
+                        <td>{group_points.toFixed(2).toLocaleString()}</td>
                     </tr>
                 ))}
                 </tbody>

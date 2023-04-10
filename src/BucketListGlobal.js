@@ -327,7 +327,7 @@ const bucketList: BucketListItem[] = [
         distance_from_campus: 19.7,
         lat: 37.39077,
         lng: -80.50803,
-        link: "https://www.google.com/maps/dir//Giles+County,+Virginia/@37.3907511,-80.5083456,50m/data=!3m1!1e3!4m9!4m8!1m0!1m5!1m1!1s0x884dddc45bb5b075:0x2db2e5402d7a57f2!2m2!1d-80.6770787!2d37.3132885!3e0",
+        link: "https://www.google.com/maps/dir//37.3907435,-80.5080891/@37.3907506,-80.5080801,64m/data=!3m1!1e3!4m2!4m1!3e0",
         bonus_quests: [],
         image: spur
     }
