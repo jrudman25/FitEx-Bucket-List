@@ -3,6 +3,7 @@ import { Box, TextField, Button, Snackbar } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { auth } from './backend/FirebaseConfig';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import MuiAlert from '@mui/material/Alert';
 
 const Login = () => {
@@ -17,6 +18,17 @@ const Login = () => {
     const Alert = forwardRef((props, ref) => {
         return <MuiAlert ref={ref} elevation={6} variant="filled" {...props} />;
     });
+
+    async function hasUserCompletedSurvey(email) {
+        const firestore = getFirestore();
+        const userRef = doc(firestore, 'users', email);
+        const userSnapshot = await getDoc(userRef);
+
+        if (userSnapshot.exists()) {
+            return userSnapshot.data().surveyCompleted || false;
+        }
+        return false;
+    }
 
     const handleSnackbarClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -37,21 +49,32 @@ const Login = () => {
     const handleUsernameChange = event => setEmail(event.target.value);
     const handlePasswordChange = event => setPassword(event.target.value);
 
-    const handleSubmit = async event => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
-        await signInWithEmailAndPassword(auth, email, password).then(() => {
-            if (!auth.currentUser.emailVerified) {
-                showSnackbar("Please verify your email before logging in.");
-                return;
-            }
-            setSeverity("success");
-            showSnackbar("Successful login!")
-            sessionStorage.setItem('username', email);
-            setTimeout(() => {
-                navigate('/home');
-                sessionStorage.setItem('isLoggedIn', true);
-            }, 1750);
-        }).catch((error) => {
+        await signInWithEmailAndPassword(auth, email, password)
+            .then(async () => {
+                if (!auth.currentUser.emailVerified) {
+                    showSnackbar('Please verify your email before logging in.');
+                    return;
+                }
+                setSeverity('success');
+                showSnackbar('Successful login!');
+                sessionStorage.setItem('username', email);
+
+                const surveyCompleted = await hasUserCompletedSurvey(email);
+                if (!surveyCompleted) {
+                    setTimeout(() => {
+                        navigate('/questionnaire');
+                        sessionStorage.setItem('isLoggedIn', true);
+                    }, 1750);
+                } else {
+                    setTimeout(() => {
+                        navigate('/home');
+                        sessionStorage.setItem('isLoggedIn', true);
+                    }, 1750);
+                }
+            })
+        .catch((error) => {
             console.log(error.code);
             if (error.code === 'auth/invalid-email') {
                 showSnackbar("Invalid email.");
