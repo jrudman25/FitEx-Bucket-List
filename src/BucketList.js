@@ -214,11 +214,11 @@ const BucketList = () => {
         else {
             hike = userData.bucketlist[index]
         }
+        userData.completed.push(hike);
         let hike_name = hike.name;
         for (let i = 0; i < userData.bucketlist.length; i++) {
             if (hike_name === userData.bucketlist[i].name) {
-                let temp = userData.bucketlist.splice(i, 1);
-                userData.completed.push(temp[0]);
+                userData.bucketlist.splice(i, 1);
             }
         }
 
